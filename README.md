@@ -1,2 +1,3 @@
-# rps-backend
-A web application - the "Stone, Paper, Scissors" game - using an artificial intelligence model to recognize gestures in photos - backend layer.
+# Rock Paper Scissors - AI, backend
+### A web application - the "Stone, Paper, Scissors" game - using an artificial intelligence model to recognize gestures in photos - backend layer.
+Celem pracy jest opracowanie backendu dla interaktywnej gry online "Papier, Kamień, Nożyce", z wykorzystaniem sztucznej inteligencji do rozpoznawania gestów przesyłanych przez użytkowników. Praca obejmuje zaprojektowanie i implementację serwera, który będzie zarządzał komunikacją między frontendem, użytkownikami oraz modelem AI. Backend będzie odpowiedzialny za autoryzację użytkowników, przetwarzanie zdjęć gestów przesyłanych przez graczy, przekazywanie ich do modelu AI oraz zwracanie wyników rozgrywki. Ważnym aspektem projektu będzie integracja modelu sztucznej inteligencji, który będzie analizował gesty pozwalając wyłonić zwycięzcę każdej rundy.
