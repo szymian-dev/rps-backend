@@ -16,4 +16,3 @@ class GestureType(Enum):
     PAPER = 0
     SCISSORS = 2
     
-    
