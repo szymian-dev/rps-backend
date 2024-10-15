@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers import predictions
 from .config import settings
+from .aimodel.aimodel import get_model
 
 app = FastAPI(
     title=settings.app_name,
@@ -16,5 +17,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_event():
+    get_model()
 
 app.include_router(predictions.router)
