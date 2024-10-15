@@ -12,8 +12,8 @@ class PredictionResponseDto(BaseModel):
  Enums
 '''
 class GestureType(Enum):
-    ROCK = 0
-    PAPER = 1
+    ROCK = 1
+    PAPER = 0
     SCISSORS = 2
     
     
