@@ -26,8 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Models\Database\" />
-    <Folder Include="Models\Interfaces\IRepositories\" />
     <Folder Include="Repositories\" />
     <Folder Include="Utils\" />
   </ItemGroup>

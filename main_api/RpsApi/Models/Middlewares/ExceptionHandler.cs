@@ -1,4 +1,6 @@
-﻿namespace RpsApi.Models.Middlewares;
+﻿using RpsApi.Models.Exceptions;
+
+namespace RpsApi.Models.Middlewares;
 using System.Net;
 
 public class ExceptionHandler
@@ -29,6 +31,8 @@ public class ExceptionHandler
     {
         ExceptionResponse response = exception switch
         {
+            InvalidTokenException _ => new ExceptionResponse(HttpStatusCode.Unauthorized, exception.Message),
+            UserNotFoundException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             _ => new ExceptionResponse(HttpStatusCode.InternalServerError, exception.Message)
         };
 
