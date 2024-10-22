@@ -10,7 +10,7 @@ public interface IAuthService
     AuthResponse RefreshTokens(RefreshRequest request);
     bool Logout(LogoutRequest request);
     UserResponse GetUser();
-    UserSearchResponse SearchUsers(UserSearchRequest request);
     bool EditUser(UserEditRequest request);  
     bool DeleteUser();
+    UserSearchResponse SearchUsers(UserSearchRequest request);
 }

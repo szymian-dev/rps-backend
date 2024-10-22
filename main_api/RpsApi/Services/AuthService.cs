@@ -83,38 +83,6 @@ public class AuthService(
         };
     }
 
-    public UserSearchResponse SearchUsers(UserSearchRequest request)
-    {
-        var filteredUsers = usersRepository.GetUsers()
-            .Where(u => u.Username.Contains(request.SearchTerm) || u.Email.Contains(request.SearchTerm));
-        int totalUsers = filteredUsers.Count();
-        int totalPages = (int)Math.Ceiling((double)totalUsers / request.PageSize);
-        
-        int pageNumber = request.PageNumber;
-        if (request.PageNumber > totalPages)
-        {
-            pageNumber = totalPages;
-        }
-        var userList = filteredUsers
-            .ApplyOrdering(request.Ascending, request.SortBy)
-            .ApplyPagination(pageNumber, request.PageSize)
-            .Select(x => new UserResponse
-            {
-                Id = x.Id,
-                Username = x.Username,
-                Email = x.Email,
-            })
-            .ToList();
-        return new UserSearchResponse
-        {
-            Users = userList,
-            TotalCount = totalUsers,
-            TotalPages = totalPages,
-            CurrentPage = pageNumber,
-            PageSize = request.PageSize
-        };
-    }
-
     public bool EditUser(UserEditRequest request)
     {
         var user = GetCurrentUserFromHttpContext();
@@ -152,6 +120,38 @@ public class AuthService(
         var user = GetCurrentUserFromHttpContext();
         jwtService.RevokeAllRefreshTokens(user);
         return usersRepository.DeleteUser(user);
+    }
+    
+    public UserSearchResponse SearchUsers(UserSearchRequest request)
+    {
+        var filteredUsers = usersRepository.GetUsers()
+            .Where(u => u.Username.Contains(request.SearchTerm) || u.Email.Contains(request.SearchTerm));
+        int totalUsers = filteredUsers.Count();
+        int totalPages = (int)Math.Ceiling((double)totalUsers / request.PageSize);
+        
+        int pageNumber = request.PageNumber;
+        if (request.PageNumber > totalPages)
+        {
+            pageNumber = totalPages;
+        }
+        var userList = filteredUsers
+            .ApplyOrdering(request.Ascending, request.SortBy)
+            .ApplyPagination(pageNumber, request.PageSize)
+            .Select(x => new UserResponse
+            {
+                Id = x.Id,
+                Username = x.Username,
+                Email = x.Email,
+            })
+            .ToList();
+        return new UserSearchResponse
+        {
+            Users = userList,
+            TotalCount = totalUsers,
+            TotalPages = totalPages,
+            CurrentPage = pageNumber,
+            PageSize = request.PageSize
+        };
     }
     
     private AuthResponse CreateSuccessAuthResponse(User user, Guid deviceId)
