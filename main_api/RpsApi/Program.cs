@@ -103,4 +103,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+// Automatically apply migrations
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate(); 
+}
+
 app.Run();
