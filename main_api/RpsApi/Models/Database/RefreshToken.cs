@@ -16,4 +16,5 @@ public class RefreshToken
     public User User { get; set; } = null!;
     // Informational fields
     public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

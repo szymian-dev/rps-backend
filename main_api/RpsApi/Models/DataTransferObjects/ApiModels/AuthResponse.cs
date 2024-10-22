@@ -2,6 +2,6 @@
 
 public class AuthResponse
 {
-    public JwtTokenDto AccessToken { get; set; } = null!;
-    public RefreshTokenDto RefreshToken { get; set; } = null!;
+    public required JwtTokenDto AccessToken { get; set; } 
+    public required RefreshTokenDto RefreshToken { get; set; } 
 }

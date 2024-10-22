@@ -2,7 +2,7 @@
 
 public class JwtTokenDto
 {
-    public string Token { get; set; }
+    public required string Token { get; set; }
     public string TokenType { get; set; } = "Bearer";
-    public DateTime ExpiresAt { get; set; }
+    public required DateTime ExpiresAt { get; set; }
 }

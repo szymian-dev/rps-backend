@@ -33,6 +33,8 @@ public class ExceptionHandler
         {
             InvalidTokenException _ => new ExceptionResponse(HttpStatusCode.Unauthorized, exception.Message),
             UserNotFoundException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
+            UserAlreadyExistsException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
+            InvalidPasswordException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             _ => new ExceptionResponse(HttpStatusCode.InternalServerError, exception.Message)
         };
 

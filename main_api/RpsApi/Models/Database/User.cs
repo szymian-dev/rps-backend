@@ -19,4 +19,5 @@ public class User
     public ICollection<Gesture> Gestures { get; set; } = new List<Gesture>();
     // Informational fields
     public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
 }

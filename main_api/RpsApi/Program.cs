@@ -5,7 +5,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using RpsApi.Database;
+using RpsApi.Models.Interfaces.IRepositories;
 using RpsApi.Models.Middlewares;
+using RpsApi.Repositories;
 using Swashbuckle.AspNetCore.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("RpsDatabaseConnection")));
 
 // Add services to the container.
+builder.Services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();

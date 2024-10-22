@@ -2,6 +2,7 @@
 
 public class RefreshRequest
 {
-    public string AccessToken { get; set; }
-    public Guid RefreshToken { get; set; }
+    public required string AccessToken { get; set; }
+    public required Guid RefreshToken { get; set; }
+    public required Guid DeviceId { get; set; }
 }

@@ -11,19 +11,11 @@ using RpsApi.Models.Interfaces.IRepositories;
 
 namespace RpsApi.Services;
 
-public class JwtService
+public class JwtService(
+    IConfiguration configuration,
+    IUsersRepository usersRepository,
+    IRefreshTokensRepository refreshTokensRepository) : IJwtService
 {
-    private readonly IConfiguration _configuration;
-    private readonly IUsersRepository _usersRepository;
-    private readonly IRefreshTokensRepository _refreshTokensRepository;
-    
-    public JwtService(IConfiguration configuration, IUsersRepository usersRepository, IRefreshTokensRepository refreshTokensRepository)
-    {
-        _configuration = configuration;
-        _usersRepository = usersRepository;
-        _refreshTokensRepository = refreshTokensRepository;
-    }
-
     public JwtTokenDto CreateJwToken(User user)
     {
         List<Claim> claims =
@@ -33,13 +25,13 @@ public class JwtService
             new(ClaimTypes.NameIdentifier, user.Id.ToString())
         ];
         
-        var keySettings = _configuration["Jwt:Key"] ?? throw new TokenCreationFailedException("Failed to create token - key missing");
-        var issuer = _configuration["Jwt:Issuer"] ?? throw new TokenCreationFailedException("Failed to create token - issuer missing");
+        var keySettings = configuration["Jwt:Key"] ?? throw new TokenCreationFailedException("Failed to create token - key missing");
+        var issuer = configuration["Jwt:Issuer"] ?? throw new TokenCreationFailedException("Failed to create token - issuer missing");
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keySettings));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
 
-        bool succ = int.TryParse(_configuration["Jwt:ExpireMinutes"], out int minutes);
+        bool succ = int.TryParse(configuration["Jwt:ExpireMinutes"], out int minutes);
         if (!succ)
         {
             throw new TokenCreationFailedException("Failed to create token");
@@ -60,23 +52,23 @@ public class JwtService
         };
     }
 
-    public RefreshTokenDto CreateOrReplaceRefreshToken(User user)
+    public RefreshTokenDto CreateOrReplaceRefreshToken(User user, Guid deviceId)
     {
-        var expirationDays = _configuration.GetSection("Jwt:RefreshTokenExpireDays").Value;
+        var expirationDays = configuration.GetSection("Jwt:RefreshTokenExpireDays").Value;
         bool succ = int.TryParse(expirationDays, out int days);
         if (expirationDays is null || !succ)
         {
             throw new TokenCreationFailedException("Failed to create token");
         }
-        var refreshToken = _refreshTokensRepository.GetRefreshToken(user);
+        var refreshToken = refreshTokensRepository.GetRefreshToken(user, deviceId);
         if (refreshToken is null)
         {
-            return CreateRefreshToken(user, days);
+            return CreateRefreshToken(user, days, deviceId);
         }
         
         var newToken = Guid.NewGuid();
         var newExpiration = DateTime.Now.AddDays(days);
-        if(!_refreshTokensRepository.ReplaceRefreshToken(refreshToken, newToken, newExpiration))
+        if(!refreshTokensRepository.ReplaceRefreshToken(refreshToken, newToken, newExpiration))
         {
             throw new TokenCreationFailedException("Failed to create token");
         }
@@ -87,12 +79,12 @@ public class JwtService
         };
     }
     
-    public User GetUserFromToken(string token)
+    public User? GetUserFromToken(string token)
     {
         var handler = new JwtSecurityTokenHandler();
         var jwtToken = handler.ReadJwtToken(token);
         var userId = jwtToken.Claims.First(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-        return _usersRepository.GetUser(int.Parse(userId));
+        return usersRepository.GetUser(int.Parse(userId));
     }
     
     public AuthResponse RefreshTokens(RefreshRequest request)
@@ -106,13 +98,28 @@ public class JwtService
         {
             throw new UserNotFoundException("User not found");
         }
-        var newRefreshToken = ValidateRefreshToken(request.RefreshToken, user);
+        var newRefreshToken = ValidateRefreshToken(request.RefreshToken, user, request.DeviceId);
         var newToken = CreateJwToken(user);
         return new AuthResponse
         {
             AccessToken = newToken,
             RefreshToken = newRefreshToken
         };
+    }
+
+    public bool RevokeRefreshToken(User user, Guid deviceId)
+    {
+        var token = refreshTokensRepository.GetRefreshToken(user, deviceId);
+        if (token is null)
+        {
+            return false;
+        }
+        return refreshTokensRepository.DeleteRefreshToken(token);
+    }
+    
+    public bool RevokeAllRefreshTokens(User user)
+    {
+        return refreshTokensRepository.DeleteAllRefreshTokens(user);   
     }
     
     private bool ValidateExpiredToken(string token)
@@ -124,23 +131,24 @@ public class JwtService
             ValidateAudience = false,
             ValidateIssuer = true,
             ValidateLifetime = false,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"] ?? throw new Exception("Key not found"))),
-            ValidIssuer = _configuration["Jwt:Issuer"] ?? throw new Exception("Issuer not found"),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? throw new Exception("Key not found"))),
+            ValidIssuer = configuration["Jwt:Issuer"] ?? throw new Exception("Issuer not found"),
             RequireExpirationTime = false
         }, out SecurityToken validatedToken);
         return validatedToken != null;
     }
     
     
-    private RefreshTokenDto CreateRefreshToken(User user, int days = 30)
+    private RefreshTokenDto CreateRefreshToken(User user, int days, Guid deviceId)
     {
         var token = new RefreshToken
         {
             UserId = user.Id,
             Token = Guid.NewGuid(),
-            ExpiresAt = DateTime.Now.AddDays(days)
+            ExpiresAt = DateTime.Now.AddDays(days),
+            DeviceId = deviceId
         };
-        _refreshTokensRepository.AddRefreshToken(token);
+        refreshTokensRepository.AddRefreshToken(token);
         return new RefreshTokenDto
         {
             Token = token.Token,
@@ -148,21 +156,21 @@ public class JwtService
         };
     }
     
-    private RefreshTokenDto ValidateRefreshToken(Guid token, User user)
+    private RefreshTokenDto ValidateRefreshToken(Guid token, User user, Guid deviceId)
     {
-        var refreshToken = _refreshTokensRepository.GetRefreshToken(user);
+        var refreshToken = refreshTokensRepository.GetRefreshToken(user, deviceId);
         if(refreshToken is null || token != refreshToken.Token || refreshToken.ExpiresAt < DateTime.Now)
         {
             throw new InvalidTokenException("Invalid refresh token");
         }
-        bool succ = int.TryParse(_configuration.GetSection("Jwt:RefreshTokenExpireDays").Value, out int days);
+        bool succ = int.TryParse(configuration.GetSection("Jwt:RefreshTokenExpireDays").Value, out int days);
         if (!succ)
         {
             throw new TokenCreationFailedException("Failed to retrieve token expiration days");
         }
         var newToken = Guid.NewGuid();
         var newExpiration = DateTime.Now.AddDays(days);
-        if(!_refreshTokensRepository.ReplaceRefreshToken(refreshToken, newToken, newExpiration))
+        if(!refreshTokensRepository.ReplaceRefreshToken(refreshToken, newToken, newExpiration))
         {
             throw new TokenCreationFailedException("Failed to replace token");
         }
