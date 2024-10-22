@@ -33,8 +33,8 @@ public class UsersRepository(ApplicationDbContext dbContext) : IUsersRepository
 
     public bool AddUser(User user)
     {
-        user.CreatedAt = DateTime.Now;
-        user.UpdatedAt = DateTime.Now;
+        user.CreatedAt = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.UtcNow;
         dbContext.Users.Add(user);
         int changes = dbContext.SaveChanges();
         return changes > 0;
@@ -42,7 +42,7 @@ public class UsersRepository(ApplicationDbContext dbContext) : IUsersRepository
 
     public bool UpdateUser(User user)
     {
-        user.UpdatedAt = DateTime.Now;
+        user.UpdatedAt = DateTime.UtcNow;
         dbContext.Users.Update(user);
         int changes = dbContext.SaveChanges();
         return changes > 0;

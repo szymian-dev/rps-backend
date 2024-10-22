@@ -64,6 +64,7 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtSettings["Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? throw new Exception("Key not found"))),
+            ClockSkew = TimeSpan.Zero
         };
         options.Events = new JwtBearerEvents
         {

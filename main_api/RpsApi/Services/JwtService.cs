@@ -40,7 +40,7 @@ public class JwtService(
         var token = new JwtSecurityToken(
             issuer: issuer, 
             claims: claims,
-            expires: DateTime.Now.AddMinutes(minutes),
+            expires: DateTime.UtcNow.AddMinutes(minutes),
             signingCredentials: creds
         );
 
@@ -67,7 +67,7 @@ public class JwtService(
         }
         
         var newToken = Guid.NewGuid();
-        var newExpiration = DateTime.Now.AddDays(days);
+        var newExpiration = DateTime.UtcNow.AddDays(days);
         if(!refreshTokensRepository.ReplaceRefreshToken(refreshToken, newToken, newExpiration))
         {
             throw new TokenCreationFailedException("Failed to create token");
@@ -145,7 +145,7 @@ public class JwtService(
         {
             UserId = user.Id,
             Token = Guid.NewGuid(),
-            ExpiresAt = DateTime.Now.AddDays(days),
+            ExpiresAt = DateTime.UtcNow.AddDays(days),
             DeviceId = deviceId
         };
         refreshTokensRepository.AddRefreshToken(token);
@@ -159,7 +159,7 @@ public class JwtService(
     private RefreshTokenDto ValidateRefreshToken(Guid token, User user, Guid deviceId)
     {
         var refreshToken = refreshTokensRepository.GetRefreshToken(user, deviceId);
-        if(refreshToken is null || token != refreshToken.Token || refreshToken.ExpiresAt < DateTime.Now)
+        if(refreshToken is null || token != refreshToken.Token || refreshToken.ExpiresAt < DateTime.UtcNow)
         {
             throw new InvalidTokenException("Invalid refresh token");
         }
@@ -169,7 +169,7 @@ public class JwtService(
             throw new TokenCreationFailedException("Failed to retrieve token expiration days");
         }
         var newToken = Guid.NewGuid();
-        var newExpiration = DateTime.Now.AddDays(days);
+        var newExpiration = DateTime.UtcNow.AddDays(days);
         if(!refreshTokensRepository.ReplaceRefreshToken(refreshToken, newToken, newExpiration))
         {
             throw new TokenCreationFailedException("Failed to replace token");

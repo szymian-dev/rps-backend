@@ -9,7 +9,7 @@ public static class HttpContextAccessorExtensions
         var context = httpContextAccessor.HttpContext;
         if (context != null && context.Request.Headers.TryGetValue("Authorization", out var token))
         {
-            if (token.ToString().StartsWith("Bearer "))
+            if (token.ToString().StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
                 return token.ToString().Substring("Bearer ".Length).Trim();
             }

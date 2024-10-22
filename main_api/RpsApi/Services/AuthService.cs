@@ -16,9 +16,13 @@ public class AuthService(
 {
     public AuthResponse Register(RegisterRequest request)
     {
-        if (usersRepository.GetUser(request.Username) is not null)
+        if (usersRepository.GetUser(request.Username) is not null )
         {
-            throw new UserAlreadyExistsException("User already exists");
+            throw new UserAlreadyExistsException("User with that username already exists");
+        }
+        if (usersRepository.GetUserByEmail(request.Email) is not null)
+        {
+            throw new UserAlreadyExistsException("User with that email already exists");
         }
         string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
         var user = new User

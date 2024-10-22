@@ -8,8 +8,8 @@ public class RefreshTokensRepository(ApplicationDbContext dbContext) : IRefreshT
 {
     public bool AddRefreshToken(RefreshToken token)
     {
-        token.CreatedAt = DateTime.Now;
-        token.UpdatedAt = DateTime.Now;
+        token.CreatedAt = DateTime.UtcNow;
+        token.UpdatedAt = DateTime.UtcNow;
         dbContext.RefreshTokens.Add(token);
         int changes = dbContext.SaveChanges();
         return changes > 0;
@@ -19,7 +19,7 @@ public class RefreshTokensRepository(ApplicationDbContext dbContext) : IRefreshT
     {
         token.Token = newToken;
         token.ExpiresAt = expires;
-        token.UpdatedAt = DateTime.Now;
+        token.UpdatedAt = DateTime.UtcNow;
         int changes = dbContext.SaveChanges();
         return changes > 0;
     }
