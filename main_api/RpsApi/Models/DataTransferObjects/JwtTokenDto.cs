@@ -4,5 +4,5 @@ public class JwtTokenDto
 {
     public string Token { get; set; }
     public string TokenType { get; set; } = "Bearer";
-    public DateTime Expires { get; set; }
+    public DateTime ExpiresAt { get; set; }
 }

@@ -55,7 +55,7 @@ public class JwtService
         return new JwtTokenDto
         {
             Token = new JwtSecurityTokenHandler().WriteToken(token),
-            Expires = token.ValidTo,
+            ExpiresAt = token.ValidTo,
             TokenType = "Bearer"
         };
     }
@@ -82,8 +82,8 @@ public class JwtService
         }
         return new RefreshTokenDto
         {
-            Token = newToken.ToString(),
-            Expires = newExpiration
+            Token = newToken,
+            ExpiresAt = newExpiration
         };
     }
     
@@ -137,21 +137,21 @@ public class JwtService
         var token = new RefreshToken
         {
             UserId = user.Id,
-            Token = Guid.NewGuid().ToString(),
-            Expires = DateTime.Now.AddDays(days)
+            Token = Guid.NewGuid(),
+            ExpiresAt = DateTime.Now.AddDays(days)
         };
         _refreshTokensRepository.AddRefreshToken(token);
         return new RefreshTokenDto
         {
             Token = token.Token,
-            Expires = token.Expires
+            ExpiresAt = token.ExpiresAt
         };
     }
     
-    private RefreshTokenDto ValidateRefreshToken(string token, User user)
+    private RefreshTokenDto ValidateRefreshToken(Guid token, User user)
     {
         var refreshToken = _refreshTokensRepository.GetRefreshToken(user);
-        if(refreshToken is null || token != refreshToken.Token || refreshToken.Expires < DateTime.Now)
+        if(refreshToken is null || token != refreshToken.Token || refreshToken.ExpiresAt < DateTime.Now)
         {
             throw new InvalidTokenException("Invalid refresh token");
         }
@@ -168,8 +168,8 @@ public class JwtService
         }
         return new RefreshTokenDto
         {
-            Token = newToken.ToString(),
-            Expires = newExpiration
+            Token = newToken,
+            ExpiresAt = newExpiration
         };
     }
 }

@@ -2,6 +2,6 @@
 
 public class RefreshTokenDto
 {
-    public string Token { get; set; } = null!;
-    public DateTime Expires { get; set; }
+    public Guid Token { get; set; }
+    public DateTime ExpiresAt { get; set; }
 }
