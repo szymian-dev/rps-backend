@@ -8,12 +8,13 @@ using RpsApi.Models.DataTransferObjects.ApiModels;
 using RpsApi.Models.DataTransferObjects.FrontModels;
 using RpsApi.Models.Exceptions;
 using RpsApi.Models.Interfaces.IRepositories;
+using RpsApi.Models.Interfaces.IServices;
 
 namespace RpsApi.Services;
 
 public class JwtService(
     IConfiguration configuration,
-    IUsersRepository usersRepository,
+    IUserContextService userContextService,
     IRefreshTokensRepository refreshTokensRepository) : IJwtService
 {
     public JwtTokenDto CreateJwToken(User user)
@@ -79,21 +80,13 @@ public class JwtService(
         };
     }
     
-    public User? GetUserFromToken(string token)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
-        var userId = jwtToken.Claims.First(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-        return usersRepository.GetUser(int.Parse(userId));
-    }
-    
     public AuthResponse RefreshTokens(RefreshRequest request)
     {
         if (!ValidateExpiredToken(request.AccessToken))
         {
             throw new InvalidTokenException("Invalid access token");
         }
-        var user = GetUserFromToken(request.AccessToken);
+        var user = userContextService.GetUserFromToken(request.AccessToken);
         if (user is null)
         {
             throw new UserNotFoundException("User not found");

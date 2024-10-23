@@ -1,4 +1,6 @@
-﻿namespace RpsApi.Models.DataTransferObjects.ApiModels;
+﻿using RpsApi.Models.Database;
+
+namespace RpsApi.Models.DataTransferObjects.ApiModels;
 
 public class UserResponse
 {

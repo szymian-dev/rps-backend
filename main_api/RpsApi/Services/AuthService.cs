@@ -11,7 +11,7 @@ namespace RpsApi.Services;
 public class AuthService(
     IJwtService jwtService,
     IUsersRepository usersRepository,
-    IHttpContextAccessor httpContextAccessor
+    IUserContextService userContextService
     ) : IAuthService
 {
     public AuthResponse Register(RegisterRequest request)
@@ -58,7 +58,7 @@ public class AuthService(
     
     public bool Logout(LogoutRequest request)
     {
-        var user = GetCurrentUserFromHttpContext();
+        var user = userContextService.GetCurrentUser();
         if (request.DeviceId is null)
         {
             return jwtService.RevokeAllRefreshTokens(user);
@@ -78,7 +78,7 @@ public class AuthService(
 
     public UserResponse GetUser()
     {
-        var user = GetCurrentUserFromHttpContext();
+        var user = userContextService.GetCurrentUser();
         return new UserResponse
         {
             Id = user.Id,
@@ -89,7 +89,7 @@ public class AuthService(
 
     public bool EditUser(UserEditRequest request)
     {
-        var user = GetCurrentUserFromHttpContext();
+        var user = userContextService.GetCurrentUser();
         if(!string.IsNullOrEmpty(request.NewUsername) && request.NewUsername != user.Username)
         {
             if(usersRepository.GetUser(request.NewUsername) is not null)
@@ -121,7 +121,7 @@ public class AuthService(
 
     public bool DeleteUser()
     {
-        var user = GetCurrentUserFromHttpContext();
+        var user = userContextService.GetCurrentUser();
         jwtService.RevokeAllRefreshTokens(user);
         return usersRepository.DeleteUser(user);
     }
@@ -167,20 +167,5 @@ public class AuthService(
             AccessToken = token,
             RefreshToken = refreshToken
         };
-    }
-    
-    private User GetCurrentUserFromHttpContext()
-    {
-        var token = httpContextAccessor.GetJwtToken();
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new InvalidTokenException("Could not find token in http context");
-        }
-        var user = jwtService.GetUserFromToken(token);
-        if (user is null)
-        {
-            throw new UserNotFoundException("User not found");
-        }
-        return user;
     }
 }
