@@ -48,10 +48,25 @@ public class GameService(IUserContextService userContextService,
             }
         };
     }
-    
-    private Player CreatePlayerResponse(User user, Gesture? gesture = null)
+
+    public GameInfoDto GetGameInfo(int gameId)
     {
-        return new Player
+        throw new NotImplementedException();
+    }
+
+    public GamesResponse GetUsersGames(GamesRequest request)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool HandleInvitation(HandleInvitationRequest request)
+    {
+        throw new NotImplementedException();
+    }
+
+    private PlayerDto CreatePlayerResponse(User user, Gesture? gesture = null)
+    {
+        return new PlayerDto
         {
             PlayerInfo = new UserResponse
             {

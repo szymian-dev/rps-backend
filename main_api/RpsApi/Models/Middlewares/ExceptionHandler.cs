@@ -32,6 +32,8 @@ public class ExceptionHandler
         ExceptionResponse response = exception switch
         {
             InvalidTokenException _ => new ExceptionResponse(HttpStatusCode.Unauthorized, exception.Message),
+            UserNotFoundException _ when context.Request.Method == HttpMethods.Get 
+                => new ExceptionResponse(HttpStatusCode.NotFound, exception.Message),
             UserNotFoundException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             UserAlreadyExistsException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             InvalidPasswordException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),

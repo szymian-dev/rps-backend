@@ -2,7 +2,7 @@
 
 namespace RpsApi.Models.DataTransferObjects;
 
-public class Player
+public class PlayerDto
 {
     public required UserResponse PlayerInfo { get; set; }
     public GestureInfoDto? SubmittedGesture { get; set; }

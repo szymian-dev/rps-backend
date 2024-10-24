@@ -96,7 +96,26 @@ public class AuthController(IAuthService service) : ControllerBase
     [HttpGet("me")]
     public UserResponse GetMe()
     {
-        return service.GetUser();
+        return service.GetCurrentUser();
+    }
+    
+    /// <summary>
+    ///     Get user data by id.
+    /// </summary>
+    /// <param name="id">
+    ///     ID of the user to get data from.
+    /// </param>
+    /// <returns>
+    ///     Response with user data.
+    /// </returns>
+    /// <response code="200"> User data retrieved successfully. </response>
+    /// <response code="401"> User is not logged in. </response>
+    /// <response code="404"> User not found. </response>
+    [Authorize]
+    [HttpGet("{id}")]
+    public UserResponse GetUser(int id)
+    {
+        return service.GetUser(id);        
     }
     
     /// <summary>
@@ -146,8 +165,8 @@ public class AuthController(IAuthService service) : ControllerBase
     /// <response code="200"> Users found successfully. </response>
     /// <response code="401"> User is not logged in. </response>
     [Authorize]
-    [HttpPost("search")]
-    public UserSearchResponse PostSearch(UserSearchRequest request)
+    [HttpGet("search")]
+    public UserSearchResponse GetSearch(UserSearchRequest request)
     {
         return service.SearchUsers(request);
     }

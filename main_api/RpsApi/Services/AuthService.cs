@@ -76,9 +76,24 @@ public class AuthService(
         return jwtService.RefreshTokens(request);
     }
 
-    public UserResponse GetUser()
+    public UserResponse GetCurrentUser()
     {
         var user = userContextService.GetCurrentUser();
+        return new UserResponse
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email
+        };
+    }
+
+    public UserResponse GetUser(int id)
+    {
+        var user = usersRepository.GetUser(id);
+        if (user is null)
+        {
+            throw new UserNotFoundException("User not found");
+        }
         return new UserResponse
         {
             Id = user.Id,
@@ -131,6 +146,18 @@ public class AuthService(
         var filteredUsers = usersRepository.GetUsers()
             .Where(u => u.Username.Contains(request.SearchTerm) || u.Email.Contains(request.SearchTerm));
         int totalUsers = filteredUsers.Count();
+        if (totalUsers == 0)
+        {
+            return new UserSearchResponse
+            {
+                Users = new List<UserResponse>(),
+                TotalCount = 0,
+                TotalPages = 1,
+                CurrentPage = 1,
+                PageSize = request.PageSize
+            };
+        }
+        
         int totalPages = (int)Math.Ceiling((double)totalUsers / request.PageSize);
         
         int pageNumber = request.PageNumber;
