@@ -142,13 +142,13 @@ public class AuthController(IAuthService service) : ControllerBase
     ///     Deletes currently logged-in user. Revokes all refresh tokens.
     /// </summary>
     /// <returns>
-    ///    True if the user was deleted successfully.
+    ///    Response with a message if the user was deleted successfully.
     /// </returns>
     /// <response code="200"> User deleted successfully. </response>
     /// <response code="401"> User is not logged in. </response>
     [Authorize]
     [HttpDelete("me")]
-    public bool DeleteMe()
+    public DeleteUserResponse DeleteMe()
     {
         return service.DeleteUser();
     }

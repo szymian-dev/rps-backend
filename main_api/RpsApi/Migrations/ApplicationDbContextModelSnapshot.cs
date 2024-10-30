@@ -39,10 +39,10 @@ namespace RpsApi.Migrations
                     b.Property<int?>("LoserId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Player1Id")
+                    b.Property<int?>("Player1Id")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Player2Id")
+                    b.Property<int?>("Player2Id")
                         .HasColumnType("integer");
 
                     b.Property<int>("Status")
@@ -209,24 +209,22 @@ namespace RpsApi.Migrations
                     b.HasOne("RpsApi.Models.Database.User", "Loser")
                         .WithMany("GamesAsLoser")
                         .HasForeignKey("LoserId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("RpsApi.Models.Database.User", "Player1")
                         .WithMany("GamesAsPlayer1")
                         .HasForeignKey("Player1Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("RpsApi.Models.Database.User", "Player2")
                         .WithMany("GamesAsPlayer2")
                         .HasForeignKey("Player2Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("RpsApi.Models.Database.User", "Winner")
                         .WithMany("GamesAsWinner")
                         .HasForeignKey("WinnerId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Loser");
 

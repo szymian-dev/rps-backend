@@ -11,7 +11,8 @@ namespace RpsApi.Services;
 public class AuthService(
     IJwtService jwtService,
     IUsersRepository usersRepository,
-    IUserContextService userContextService
+    IUserContextService userContextService,
+    IGameService gameService
     ) : IAuthService
 {
     public AuthResponse Register(RegisterRequest request)
@@ -134,11 +135,15 @@ public class AuthService(
         return usersRepository.UpdateUser(user);
     }
 
-    public bool DeleteUser()
+    public DeleteUserResponse DeleteUser()
     {
         var user = userContextService.GetCurrentUser();
-        jwtService.RevokeAllRefreshTokens(user);
-        return usersRepository.DeleteUser(user);
+        return new DeleteUserResponse()
+        {
+            GamesCancelledMatchRowsChanged = gameService.CancelAllUserGames(user),
+            RefreshTokensDeletedMatchRowsChanged = jwtService.RevokeAllRefreshTokens(user),
+            UserDeleted = usersRepository.DeleteUser(user)
+        };
     }
     
     public PagedResponse<UserResponse> SearchUsers(UserSearchRequest request)

@@ -18,28 +18,28 @@ public class ApplicationDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-       modelBuilder.Entity<Game>()
-           .HasOne(g => g.Player1)
-           .WithMany(u => u.GamesAsPlayer1)
-           .HasForeignKey(g => g.Player1Id)
-           .OnDelete(DeleteBehavior.Restrict); 
+        modelBuilder.Entity<Game>()
+            .HasOne(g => g.Player1)
+            .WithMany(u => u.GamesAsPlayer1)
+            .HasForeignKey(g => g.Player1Id)
+            .OnDelete(DeleteBehavior.SetNull);
 
-       modelBuilder.Entity<Game>()
-           .HasOne(g => g.Player2)
-           .WithMany(u => u.GamesAsPlayer2)
-           .HasForeignKey(g => g.Player2Id)
-           .OnDelete(DeleteBehavior.Restrict); 
+        modelBuilder.Entity<Game>()
+            .HasOne(g => g.Player2)
+            .WithMany(u => u.GamesAsPlayer2)
+            .HasForeignKey(g => g.Player2Id)
+            .OnDelete(DeleteBehavior.SetNull);
 
-       modelBuilder.Entity<Game>()
-           .HasOne(g => g.Winner)
-           .WithMany(u => u.GamesAsWinner)
-           .HasForeignKey(g => g.WinnerId)
-           .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Game>()
+            .HasOne(g => g.Winner)
+            .WithMany(u => u.GamesAsWinner)
+            .HasForeignKey(g => g.WinnerId)
+            .OnDelete(DeleteBehavior.SetNull);
 
-       modelBuilder.Entity<Game>()
-           .HasOne(g => g.Loser)
-           .WithMany(u => u.GamesAsLoser)
-           .HasForeignKey(g => g.LoserId)
-           .OnDelete(DeleteBehavior.Restrict); 
+        modelBuilder.Entity<Game>()
+            .HasOne(g => g.Loser)
+            .WithMany(u => u.GamesAsLoser)
+            .HasForeignKey(g => g.LoserId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

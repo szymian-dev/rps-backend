@@ -15,7 +15,7 @@ public static class GameStatusExtensions
         return currentStatus switch
         {
             GameStatus.NotStarted => newStatus == GameStatus.InProgress || newStatus == GameStatus.Cancelled,
-            GameStatus.InProgress => newStatus == GameStatus.Completed,
+            GameStatus.InProgress => newStatus == GameStatus.Completed || newStatus == GameStatus.Cancelled,
             GameStatus.Cancelled => false, 
             GameStatus.Completed => false, 
             _ => false

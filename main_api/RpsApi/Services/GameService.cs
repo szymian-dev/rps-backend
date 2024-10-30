@@ -147,15 +147,27 @@ public class GameService(IUserContextService userContextService,
         throw new NotImplementedException();
     }
 
-    private static PlayerDto CreatePlayerResponse(User user, Gesture? gesture = null)
+    public bool CancelAllUserGames(User user)
+    {
+        var userGames = gamesRepository.GetGames()
+           .Where(g => g.Player1Id == user.Id || g.Player2Id == user.Id)
+           .Where(g => g.Status == GameStatus.NotStarted || g.Status == GameStatus.InProgress);
+        if(!userGames.Any())
+        {
+           return true;
+        }
+        return gamesRepository.CancelUserGames(userGames);
+    }
+
+    private static PlayerDto CreatePlayerResponse(User? user, Gesture? gesture = null)
     {
         return new PlayerDto
         {
             PlayerInfo = new UserResponse
             {
-                Id = user.Id,
-                Username = user.Username,
-                Email = user.Email,
+                Id = user?.Id,
+                Username = user?.Username,
+                Email = user?.Email,
             },
             SubmittedGesture = gesture is not null ? new GestureInfoDto
             {
@@ -164,4 +176,5 @@ public class GameService(IUserContextService userContextService,
             } : null
         };
     }
+    
 }

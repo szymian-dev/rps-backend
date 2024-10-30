@@ -41,10 +41,11 @@ public class RefreshTokensRepository(ApplicationDbContext dbContext) : IRefreshT
         var userTokens = dbContext.RefreshTokens.Where(t => t.UserId == user.Id);
         if (!userTokens.Any())
         {
-            return false;
+            return true;
         }
+        int rows = userTokens.Count();
         dbContext.RefreshTokens.RemoveRange(userTokens);
         int changes = dbContext.SaveChanges();
-        return changes > 0;
+        return changes == rows;
     }
 }
