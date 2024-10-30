@@ -14,5 +14,5 @@ public interface IAuthService
     UserResponse GetUser(int id);
     bool EditUser(UserEditRequest request);  
     bool DeleteUser();
-    UserSearchResponse SearchUsers(UserSearchRequest request);
+    PagedResponse<UserResponse> SearchUsers(UserSearchRequest request);
 }

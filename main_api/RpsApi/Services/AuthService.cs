@@ -141,33 +141,18 @@ public class AuthService(
         return usersRepository.DeleteUser(user);
     }
     
-    public UserSearchResponse SearchUsers(UserSearchRequest request)
+    public PagedResponse<UserResponse> SearchUsers(UserSearchRequest request)
     {
         var filteredUsers = usersRepository.GetUsers()
             .Where(u => u.Username.Contains(request.SearchTerm) || u.Email.Contains(request.SearchTerm));
-        int totalUsers = filteredUsers.Count();
-        if (totalUsers == 0)
+        var calculatedPagination = PaginationHelper.CalculatePagination(filteredUsers, request.PageNumber, request.PageSize);
+        if (calculatedPagination.TotalCount == 0)
         {
-            return new UserSearchResponse
-            {
-                Users = new List<UserResponse>(),
-                TotalCount = 0,
-                TotalPages = 1,
-                CurrentPage = 1,
-                PageSize = request.PageSize
-            };
-        }
-        
-        int totalPages = (int)Math.Ceiling((double)totalUsers / request.PageSize);
-        
-        int pageNumber = request.PageNumber;
-        if (request.PageNumber > totalPages)
-        {
-            pageNumber = totalPages;
+            return PaginationHelper.EmptyResponse<UserResponse>(request.PageSize);
         }
         var userList = filteredUsers
             .ApplyOrdering(request.Ascending, request.SortBy)
-            .ApplyPagination(pageNumber, request.PageSize)
+            .ApplyPagination(calculatedPagination.PageNumber, calculatedPagination.PageSize)
             .Select(x => new UserResponse
             {
                 Id = x.Id,
@@ -175,13 +160,13 @@ public class AuthService(
                 Email = x.Email,
             })
             .ToList();
-        return new UserSearchResponse
+        return new PagedResponse<UserResponse>()
         {
-            Users = userList,
-            TotalCount = totalUsers,
-            TotalPages = totalPages,
-            CurrentPage = pageNumber,
-            PageSize = request.PageSize
+            Items = userList,
+            PageNumber = calculatedPagination.PageNumber,
+            PageSize = calculatedPagination.PageSize,
+            TotalCount = calculatedPagination.TotalCount,
+            TotalPages = calculatedPagination.TotalPages
         };
     }
     

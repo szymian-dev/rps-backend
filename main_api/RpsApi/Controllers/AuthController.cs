@@ -166,7 +166,7 @@ public class AuthController(IAuthService service) : ControllerBase
     /// <response code="401"> User is not logged in. </response>
     [Authorize]
     [HttpGet("search")]
-    public UserSearchResponse GetSearch(UserSearchRequest request)
+    public PagedResponse<UserResponse> GetSearch([FromQuery] UserSearchRequest request)
     {
         return service.SearchUsers(request);
     }

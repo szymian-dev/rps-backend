@@ -3,5 +3,5 @@
 public class HandleInvitationRequest
 {
     public required int GameId { get; set; }
-    public required bool Accept { get; set; }
+    public required bool Accepted { get; set; }
 }

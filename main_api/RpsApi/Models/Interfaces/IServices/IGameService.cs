@@ -8,6 +8,7 @@ public interface IGameService
 {
     NewGameResponse StartNewGame(NewGameRequest request);
     GameInfoDto GetGameInfo(int gameId);
-    GamesResponse GetUsersGames(GamesRequest request);
+    PagedResponse<GameInfoDto> GetUsersGames(GamesRequest request);
     bool HandleInvitation(HandleInvitationRequest request);
+    bool CheckForGameUpdates(int gameId, int lastGestureId);
 }

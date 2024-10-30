@@ -5,11 +5,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
-public static class UserSearchExtensions
+public static class QueryExtensions
 {
-    public static IQueryable<T> ApplyOrdering<T>(this IQueryable<T> query, bool ascending, string sortBy)
+    public static IQueryable<T> ApplyOrdering<T>(this IQueryable<T> query, bool? ascending, string? sortBy)
     {
-        if (string.IsNullOrWhiteSpace(sortBy))
+        if (string.IsNullOrWhiteSpace(sortBy) || ascending == null)
         {
             return query;
         }
@@ -25,7 +25,7 @@ public static class UserSearchExtensions
         var propertyAccess = Expression.MakeMemberAccess(parameter, propertyInfo);
         var orderByExpression = Expression.Lambda(propertyAccess, parameter);
 
-        var methodName = ascending ? "OrderBy" : "OrderByDescending";
+        var methodName = ascending.Value ? "OrderBy" : "OrderByDescending";
         var resultExpression = Expression.Call(typeof(Queryable), methodName, new Type[] { typeof(T), propertyInfo.PropertyType },
             query.Expression, Expression.Quote(orderByExpression));
 

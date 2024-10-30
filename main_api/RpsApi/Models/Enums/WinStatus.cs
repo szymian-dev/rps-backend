@@ -2,8 +2,8 @@
 
 public enum WinStatus
 {
-    WON = 1,
-    LOST = 2,
-    DRAW = 3,
-    NOT_DECIDED = 4
+    Won = 1,
+    Lost = 2,
+    Draw = 3,
+    NotDecided = 4
 }

@@ -7,3 +7,18 @@ public enum GameStatus
     Completed = 2,
     Cancelled = 3
 }
+
+public static class GameStatusExtensions
+{
+    public static bool IsValidTransition(this GameStatus currentStatus, GameStatus newStatus)
+    {
+        return currentStatus switch
+        {
+            GameStatus.NotStarted => newStatus == GameStatus.InProgress || newStatus == GameStatus.Cancelled,
+            GameStatus.InProgress => newStatus == GameStatus.Completed,
+            GameStatus.Cancelled => false, 
+            GameStatus.Completed => false, 
+            _ => false
+        };
+    }
+}

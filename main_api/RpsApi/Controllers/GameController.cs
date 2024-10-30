@@ -30,7 +30,7 @@ public class GameController(IGameService gameService)
 
     [Authorize]
     [HttpGet("")]
-    public GamesResponse GetUsersGames(GamesRequest request)
+    public PagedResponse<GameInfoDto> GetUsersGames([FromQuery] GamesRequest request)
     {
         return gameService.GetUsersGames(request);
     }

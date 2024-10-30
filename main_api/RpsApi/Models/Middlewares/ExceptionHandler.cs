@@ -37,6 +37,12 @@ public class ExceptionHandler
             UserNotFoundException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             UserAlreadyExistsException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             InvalidPasswordException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
+            GameNotFoundException _ when context.Request.Method == HttpMethods.Get 
+                => new ExceptionResponse(HttpStatusCode.NotFound, exception.Message),
+            GameNotFoundException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
+            InvalidGameStatusException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
+            UnauthorizedAccessException _ => new ExceptionResponse(HttpStatusCode.Unauthorized, exception.Message),
+            InvalidGameException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             _ => new ExceptionResponse(HttpStatusCode.InternalServerError, exception.Message)
         };
 
