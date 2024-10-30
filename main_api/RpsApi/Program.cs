@@ -9,6 +9,7 @@ using RpsApi.Database;
 using RpsApi.Models.Interfaces.IRepositories;
 using RpsApi.Models.Interfaces.IServices;
 using RpsApi.Models.Middlewares;
+using RpsApi.Models.Settings;
 using RpsApi.Repositories;
 using RpsApi.Services;
 using Swashbuckle.AspNetCore.Filters;
@@ -29,6 +30,12 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<IGestureService, GestureService>();
+builder.Services.AddScoped<IAiModelApiService, AiModelApiService>();
+builder.Services.AddScoped<IFileManagementService, FileManagementService>();
+
+// Add settings to the configuration
+builder.Services.Configure<FileSettings>(builder.Configuration.GetSection("FileSettings"));
 
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers()

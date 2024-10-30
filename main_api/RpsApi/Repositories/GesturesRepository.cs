@@ -1,8 +1,16 @@
-﻿using RpsApi.Models.Interfaces.IRepositories;
+﻿using RpsApi.Database;
+using RpsApi.Models.Database;
+using RpsApi.Models.Interfaces.IRepositories;
 
 namespace RpsApi.Repositories;
 
-public class GesturesRepository : IGesturesRepository
+public class GesturesRepository(ApplicationDbContext dbContext) : IGesturesRepository
 {
-    
+    public bool AddGesture(Gesture gesture)
+    {
+        gesture.CreatedAt = DateTime.UtcNow;
+        gesture.UpdatedAt = DateTime.UtcNow;
+        dbContext.Gestures.Add(gesture);
+        return dbContext.SaveChanges() > 0;
+    }
 }

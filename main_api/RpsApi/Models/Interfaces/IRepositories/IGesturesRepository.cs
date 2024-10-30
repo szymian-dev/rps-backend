@@ -1,6 +1,8 @@
-﻿namespace RpsApi.Models.Interfaces.IRepositories;
+﻿using RpsApi.Models.Database;
+
+namespace RpsApi.Models.Interfaces.IRepositories;
 
 public interface IGesturesRepository
 {
-    
+    bool AddGesture(Gesture gesture);
 }

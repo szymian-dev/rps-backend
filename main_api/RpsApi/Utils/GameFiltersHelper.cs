@@ -23,6 +23,14 @@ public static class GameFiltersHelper
             query = query.Where(g => g.Player1Id == filters.OpponentId || g.Player2Id == filters.OpponentId);
         }
 
+        if (filters.PlaysAs.HasValue)
+        {
+            query = query.Where(g => 
+                (g.Player1Id == user.Id && filters.PlaysAs == PlayerEnum.Player1) ||
+                (g.Player2Id == user.Id && filters.PlaysAs == PlayerEnum.Player2)
+            );
+        }
+
         if (filters.WinStatus.HasValue)
         {
             switch (filters.WinStatus)
