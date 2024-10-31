@@ -33,10 +33,21 @@ builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddScoped<IGestureService, GestureService>();
 builder.Services.AddScoped<IAiModelApiService, AiModelApiService>();
 builder.Services.AddScoped<IFileManagementService, FileManagementService>();
+builder.Services.AddSingleton<IApiCacheService, ApiCacheService>();
 
 // Add settings to the configuration
 builder.Services.Configure<FileSettings>(builder.Configuration.GetSection("FileSettings"));
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<AiModelApiSettings>(builder.Configuration.GetSection("AiModelApiSettings"));
+builder.Services.Configure<JwtAiModelApiSettings>(builder.Configuration.GetSection("JwtAiModelApiSettings"));
 
+// Add HttpClients
+builder.Services.AddHttpClient<IAiModelApiService, AiModelApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["AiModelApiSettings:Url"] ?? throw new Exception("AiModelApiSettings:Url not found"));
+});
+
+builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers()
     .AddJsonOptions(options =>

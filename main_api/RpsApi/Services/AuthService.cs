@@ -177,7 +177,7 @@ public class AuthService(
     
     private AuthResponse CreateSuccessAuthResponse(User user, Guid deviceId)
     {
-        var token = jwtService.CreateJwToken(user);
+        var token = jwtService.CreateJwtForUser(user);
         var refreshToken = jwtService.CreateOrReplaceRefreshToken(user, deviceId);
         return new AuthResponse
         {
