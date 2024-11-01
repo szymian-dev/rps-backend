@@ -23,7 +23,7 @@ public class JwtService(
     IApiCacheService cacheService) : IJwtService
 {
     private readonly JwtSettings _settings = ValidateSettings(options.Value);
-    private readonly JwtAiModelApiSettings _aiModelSettingses = ValidateSettings(aiModelOptions.Value);
+    private readonly JwtAiModelApiSettings _aiModelSettings = ValidateSettings(aiModelOptions.Value);
     public JwtTokenDto CreateJwtForUser(User user)
     {
         List<Claim> claims =
@@ -97,6 +97,7 @@ public class JwtService(
         var token = cacheService.RetrieveToken();
         if(token is null || token.ExpiresAt < DateTime.UtcNow)
         {
+            cacheService.RetrieveToken();
             return CreateJwtForAiModelApi();
         }
         return token;
@@ -108,7 +109,7 @@ public class JwtService(
         {
             new Claim("Client", "AiModelApiClient")
         };
-        var token = GenerateJwtToken(claims, _aiModelSettingses);
+        var token = GenerateJwtToken(claims, _aiModelSettings);
         cacheService.SaveToken(token);
         return token;
     }

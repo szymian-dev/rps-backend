@@ -21,4 +21,5 @@ public static class GameStatusExtensions
             _ => false
         };
     }
+    
 }

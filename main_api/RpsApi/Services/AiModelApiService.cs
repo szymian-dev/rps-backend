@@ -6,6 +6,7 @@ using RpsApi.Models.Enums;
 using RpsApi.Models.Exceptions;
 using RpsApi.Models.Interfaces.IServices;
 using RpsApi.Models.Settings;
+using RpsApi.Utils;
 
 namespace RpsApi.Services;
 
@@ -17,14 +18,8 @@ public class AiModelApiService(HttpClient httpClient, IOptions<AiModelApiSetting
         using var content = new MultipartFormDataContent();
         var fileStream = new FileStream(filePath, FileMode.Open);
         var streamContent = new StreamContent(fileStream);
-        
-        string mimeType = Path.GetExtension(filePath).ToLower() switch
-        {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            _ => "application/octet-stream"
-        };
-        streamContent.Headers.ContentType = MediaTypeHeaderValue.Parse(mimeType);
+
+        streamContent.Headers.ContentType = MimeTypeHelper.GetImageMimeType(filePath);
         content.Add(streamContent, "file", Path.GetFileName(filePath));
         var predictionResponseDto = await PostAsync<PredictionResponseDto>(_settings.Endpoint, content);
         if (predictionResponseDto is null)

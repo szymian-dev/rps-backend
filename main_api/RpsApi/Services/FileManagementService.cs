@@ -1,8 +1,10 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using RpsApi.Models.DataTransferObjects;
 using RpsApi.Models.Exceptions;
 using RpsApi.Models.Interfaces.IServices;
 using RpsApi.Models.Settings;
+using RpsApi.Utils;
 
 namespace RpsApi.Services;
 
@@ -30,7 +32,24 @@ public class FileManagementService(IOptions<FileSettings> settings) : IFileManag
 
     public bool DeleteFile(string fileName)
     {
-        throw new NotImplementedException();
+        string path = Path.Combine(GetUploadDirectoryPath(), fileName);
+        if (File.Exists(path))
+        {
+            File.Delete(path);
+            return true;
+        }
+        return false;
+    }
+
+    public FileStreamResult GetFile(string fileName)
+    {
+        string path = Path.Combine(GetUploadDirectoryPath(), fileName);
+        if (!File.Exists(path))
+        {
+            throw new FileNotFoundException("File not found");
+        }
+        var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        return new FileStreamResult(stream, MimeTypeHelper.GetImageMimeTypeString(fileName));
     }
 
     private NewFileInfo ValidateUploadedFile(IFormFile file)

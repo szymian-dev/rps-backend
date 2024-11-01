@@ -142,9 +142,42 @@ public class GameService(IUserContextService userContextService,
         return gamesRepository.UpdateGame(game);
     }
 
-    public bool CheckForGameUpdates(int gameId, int lastGestureId)
+    public GameUpdateResponse CheckForGameUpdates(int gameId)
     {
-        throw new NotImplementedException();
+        var game = GetGameInfo(gameId);
+        var result = GameUpdateHelper.CheckAndUpdateGame(game);
+        
+        if (result.Action == GameUpdateAction.NoAction)
+        {
+            return new GameUpdateResponse
+            {
+                Action = result.Action,
+                Message = result.Message
+            };
+        }
+        
+        var gameDb = gamesRepository.GetGame(gameId);
+        if (gameDb is null)
+        {
+            throw new GameNotFoundException("Game not found in the database");
+        }
+        if (result.Status is not null)
+        {
+            gameDb.Status = result.Status.Value;
+        }         
+        gameDb.WinnerId = result.WinnerId;      
+        gameDb.LoserId = result.LoserId;         
+        gameDb.IsTie = result.IsTie;    
+        if(!gamesRepository.UpdateGame(gameDb))
+        {
+            throw new DatabaseException("Failed to update game state in the database");
+        }  
+        
+        return new GameUpdateResponse
+        {
+            Action = result.Action,
+            Message = result.Message
+        };
     }
 
     public bool CancelAllUserGames(User user)

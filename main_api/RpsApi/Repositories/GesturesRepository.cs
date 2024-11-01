@@ -13,4 +13,9 @@ public class GesturesRepository(ApplicationDbContext dbContext) : IGesturesRepos
         dbContext.Gestures.Add(gesture);
         return dbContext.SaveChanges() > 0;
     }
+
+    public Gesture? GetGesture(int id)
+    {
+        return dbContext.Gestures.SingleOrDefault(g => g.Id == id);
+    }
 }

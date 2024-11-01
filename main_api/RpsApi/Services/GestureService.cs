@@ -1,5 +1,7 @@
-﻿using RpsApi.Models.Database;
+﻿using Microsoft.AspNetCore.Mvc;
+using RpsApi.Models.Database;
 using RpsApi.Models.DataTransferObjects;
+using RpsApi.Models.DataTransferObjects.ApiModels;
 using RpsApi.Models.Enums;
 using RpsApi.Models.Exceptions;
 using RpsApi.Models.Interfaces.IRepositories;
@@ -10,7 +12,7 @@ namespace RpsApi.Services;
 public class GestureService(IFileManagementService fileManagementService, IAiModelApiService aiModelApiService, 
     IGesturesRepository gesturesRepository, IGameService gameService, IUserContextService userContextService) : IGestureService
 {
-    public async Task<bool> UploadGesture(IFormFile file, int gameId)
+    public async Task<GameUpdateResponse> UploadGesture(IFormFile file, int gameId)
     {
         var game = gameService.GetGameInfo(gameId);
         var user = userContextService.GetCurrentUser();
@@ -32,12 +34,23 @@ public class GestureService(IFileManagementService fileManagementService, IAiMod
             fileManagementService.DeleteFile(fileName);
             throw new DatabaseException("Failed to add gesture to database");
         }
-        return gameService.CheckForGameUpdates(gameId, newGesture.Id);
+        return gameService.CheckForGameUpdates(gameId);
     }
 
-    public Task<GestureDto> GetGesture(int fileId)
+    public FileStreamResult GetGesture(int fileId)
     {
-        throw new NotImplementedException();
+        var user = userContextService.GetCurrentUser();
+        var gesture = gesturesRepository.GetGesture(fileId);
+        if(gesture is null)
+        {
+            throw new NotFoundException("Gesture not found");
+        }
+        var game = gameService.GetGameInfo(gesture.GameId);
+        if(game.Player1.PlayerInfo.Id != user.Id && game.Player2.PlayerInfo.Id != user.Id)
+        {
+            throw new UnauthorizedAccessException("User is not a player in this game");
+        }
+        return fileManagementService.GetFile(gesture.FilePath);
     }
 
     private static void ValidateGestureAddition(GameInfoDto game, User user)

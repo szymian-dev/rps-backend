@@ -11,6 +11,6 @@ public interface IGameService
     GameInfoDto GetGameInfo(int gameId);
     PagedResponse<GameInfoDto> GetUsersGames(GamesRequest request);
     bool HandleInvitation(HandleInvitationRequest request);
-    bool CheckForGameUpdates(int gameId, int lastGestureId);
+    GameUpdateResponse CheckForGameUpdates(int gameId);
     bool CancelAllUserGames(User user);
 }
