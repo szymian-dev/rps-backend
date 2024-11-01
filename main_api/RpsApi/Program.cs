@@ -57,6 +57,12 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "RPS Main API",  
+        Version = "v1",
+        Description = "Main API for the Rock-Paper-Scissors game",
+    });
     // JWT Access Token
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
