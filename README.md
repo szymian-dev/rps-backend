@@ -58,3 +58,12 @@ Port `8000` is the default port, you can change it to any other available port. 
     "Endpoint": "predictions"
   },
 ```
+### Configuration
+The AI Model API uses the `.env` file to configure the project. The file is located in the `aimodel_api` directory. 
+
+The crucial configuration is the path to the AI Model file. In order to be able to use `predictions` you need to have a pretrained AI Model file (.h5) on the disk. To configure the path to the model, you need to update the `AI_MODEL_PATH` variable in the `.env` file.
+
+Example:
+```env
+AI_MODEL_PATH=../model/ai_model.h5
+```
