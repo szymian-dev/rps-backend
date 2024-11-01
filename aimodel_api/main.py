@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import logging
@@ -20,23 +20,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    logger.info(f"Request path: {request.url.path}")
-    logger.info(f"Request method: {request.method}")
-    logger.info(f"Request headers: {request.headers}")
-    
-    #if request.method == "POST":
-    #    body = await request.body()
-    #    logger.info(f"Request body: {body.decode()}")
-    
-    response = await call_next(request)
-    return response
-
 @app.on_event("startup")
 async def startup_event():
     get_model()
-
-app.include_router(predictions.router)
+    
+api_router = APIRouter(prefix="/api/v1")
+api_router.include_router(predictions.router)
+app.include_router(api_router)

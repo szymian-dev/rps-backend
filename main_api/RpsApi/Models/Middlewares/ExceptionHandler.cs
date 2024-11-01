@@ -47,6 +47,7 @@ public class ExceptionHandler
             InvalidGameStateException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             NotFoundException _ => new ExceptionResponse(HttpStatusCode.NotFound, exception.Message),
             InvalidFilterStateException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
+            ForbiddenAccessException _ => new ExceptionResponse(HttpStatusCode.Forbidden, exception.Message),
             _ => new ExceptionResponse(HttpStatusCode.InternalServerError, exception.Message)
         };
 

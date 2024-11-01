@@ -131,7 +131,7 @@ public class GameService(IUserContextService userContextService,
         var userId = userContextService.GetCurrentUser().Id;
         if (game.Player2Id != userId)
         {
-            throw new UnauthorizedAccessException("You are not allowed to accept or decline this invitation");
+            throw new ForbiddenAccessException("You are not allowed to accept or decline this invitation");
         }
         var newStatus = request.Accepted ? GameStatus.InProgress : GameStatus.Cancelled;
         if (!game.Status.IsValidTransition(newStatus))

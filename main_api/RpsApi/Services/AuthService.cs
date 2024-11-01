@@ -12,7 +12,8 @@ public class AuthService(
     IJwtService jwtService,
     IUsersRepository usersRepository,
     IUserContextService userContextService,
-    IGameService gameService
+    IGameService gameService,
+    IGesturesService gesturesService
     ) : IAuthService
 {
     public AuthResponse Register(RegisterRequest request)
@@ -143,6 +144,7 @@ public class AuthService(
         {
             GamesCancelledMatchRowsChanged = gameService.CancelAllUserGames(user),
             RefreshTokensDeletedMatchRowsChanged = jwtService.RevokeAllRefreshTokens(user),
+            GesturesDeletedMatchRowsChanged = gesturesService.DeleteAllUserGestures(user),
             UserDeleted = usersRepository.DeleteUser(user)
         };
     }

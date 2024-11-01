@@ -65,8 +65,8 @@
                 True if the refresh token was revoked successfully.
             </returns>
             <response code="200"> User logged out successfully. </response>
-            <response code="401"> User is not logged in. </response>
             <response code="400"> User with that username does not exist. </response>
+            <response code="401"> User is not logged in. </response>
         </member>
         <member name="M:RpsApi.Controllers.AuthController.GetMe">
             <summary>
@@ -103,8 +103,7 @@
                 True if the user data was edited successfully.
             </returns>
             <response code="200"> User data edited successfully. </response>
-            <response code="400"> User with that username or email already exists. </response>
-            <response code="400"> Invalid password. </response>
+            <response code="400"> User with that username or email already exists. Invalid password. </response>
             <response code="401"> User is not logged in. </response>
         </member>
         <member name="M:RpsApi.Controllers.AuthController.DeleteMe">
@@ -139,6 +138,106 @@
             <summary>
                 Controller for game related actions.
             </summary>
+        </member>
+        <member name="M:RpsApi.Controllers.GameController.PostGame(RpsApi.Models.DataTransferObjects.FrontModels.NewGameRequest)">
+            <summary>
+                Starts a new game. Challenges another player to a game.
+            </summary>
+            <param name="request">
+                Request with the id of the player to challenge.
+            </param>
+            <returns>
+               Response with the information about the new game.
+            </returns>
+            <response code="200"> Game started successfully. </response>
+            <response code="400"> Player with that id does not exist. </response>
+            <response code="401"> Unauthorized. </response>
+        </member>
+        <member name="M:RpsApi.Controllers.GameController.GetGameInfo(System.Int32)">
+            <summary>
+                Gets full information about a game.
+            </summary>
+            <param name="gameId">
+                Id of the game.
+            </param>
+            <returns>
+                Response with the information about the game.
+            </returns>
+            <response code="200"> Game info retrieved successfully. </response>
+            <response code="401"> Unauthorized. </response>
+            <response code="404"> Game with that id does not exist. </response>
+        </member>
+        <member name="M:RpsApi.Controllers.GameController.GetUsersGames(RpsApi.Models.DataTransferObjects.FrontModels.GamesRequest)">
+            <summary>
+                Gets a list of games that the user is participating in.
+            </summary>
+            <param name="request">
+               Request with page number, page size and search filters.
+            </param>
+            <returns>
+              Response with a filtered list of games.
+            </returns>
+            <response code="200"> Games retrieved successfully. </response>
+            <response code="401"> Unauthorized. </response>
+        </member>
+        <member name="M:RpsApi.Controllers.GameController.PostInvitation(RpsApi.Models.DataTransferObjects.FrontModels.HandleInvitationRequest)">
+            <summary>
+                Handles an invitation to a game.
+            </summary>
+            <param name="request">
+               Request with the id of the game to accept or decline.
+            </param>
+            <returns>
+               True if the invitation was handled successfully.
+            </returns>
+            <response code="200"> Invitation handled successfully. </response>
+            <response code="400"> Game with that id does not exist. Game has already started or is cancelled </response>
+            <response code="401"> Unauthorized </response>
+            <response code="403"> User is not a participant of that particular game </response>
+        </member>
+        <member name="T:RpsApi.Controllers.GesturesController">
+            <summary>
+                Controller for gesture related actions e.g. uploading and downloading gestures.
+            </summary>
+        </member>
+        <member name="M:RpsApi.Controllers.GesturesController.#ctor(RpsApi.Models.Interfaces.IServices.IGesturesService)">
+            <summary>
+                Controller for gesture related actions e.g. uploading and downloading gestures.
+            </summary>
+        </member>
+        <member name="M:RpsApi.Controllers.GesturesController.PostGesture(Microsoft.AspNetCore.Http.IFormFile,System.Int32)">
+            <summary>
+                Uploads a gesture file to the server. Analyzes the gesture and saves it to the database.
+            </summary>
+            <param name="file">
+               File with the gesture.
+            </param>
+            <param name="gameId">
+              Id of the game that the gesture is for.
+            </param>
+            <returns>
+              Response with the information about the game.
+            </returns>
+            <response code="200"> Gesture uploaded successfully. </response>
+            <response code="400"> Gesture file is invalid. Game with that id does not exist. Game is not in the gesture phase. User has already uploaded a gesture for this game. </response>
+            <response code="401"> Unauthorized. </response>
+            <response code="403"> User is not a participant in the game. </response>
+            <response code="500"> Internal server error or could not get a response from AI Model API </response>
+        </member>
+        <member name="M:RpsApi.Controllers.GesturesController.GetGesture(System.Int32)">
+            <summary>
+                Downloads a gesture file from the server.
+            </summary>
+            <param name="fileId">
+              Id of the gesture file.
+            </param>
+            <returns>
+             Response with the gesture file.
+            </returns>
+            <response code="200"> Gesture file downloaded successfully. </response>
+            <response code="401"> Unauthorized. </response>
+            <response code="404"> Gesture file with that id does not exist. </response>
+            <response code="403"> User is not a participant in the game. </response>
         </member>
         <member name="T:RpsApi.Migrations.NewBeginning">
             <inheritdoc />

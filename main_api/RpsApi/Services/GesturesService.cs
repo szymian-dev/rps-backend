@@ -9,8 +9,8 @@ using RpsApi.Models.Interfaces.IServices;
 
 namespace RpsApi.Services;
 
-public class GestureService(IFileManagementService fileManagementService, IAiModelApiService aiModelApiService, 
-    IGesturesRepository gesturesRepository, IGameService gameService, IUserContextService userContextService) : IGestureService
+public class GesturesService(IFileManagementService fileManagementService, IAiModelApiService aiModelApiService, 
+    IGesturesRepository gesturesRepository, IGameService gameService, IUserContextService userContextService) : IGesturesService
 {
     public async Task<GameUpdateResponse> UploadGesture(IFormFile file, int gameId)
     {
@@ -26,7 +26,7 @@ public class GestureService(IFileManagementService fileManagementService, IAiMod
         {
             gestureType = await aiModelApiService.AnalyzeGesture(filePath);
         }
-        catch (AiModelApiException e)
+        catch (Exception e)
         {
             fileManagementService.DeleteFile(fileName);
             throw;
@@ -39,13 +39,35 @@ public class GestureService(IFileManagementService fileManagementService, IAiMod
             GameId = gameId,
             UserId = user.Id
         };
-        bool succ = gesturesRepository.AddGesture(newGesture);
+
+        bool succ;
+        try
+        {
+            succ = gesturesRepository.AddGesture(newGesture);
+        }
+        catch (Exception e)
+        {
+            fileManagementService.DeleteFile(fileName);
+            throw;
+        }
         if(!succ)
         {
             fileManagementService.DeleteFile(fileName);
             throw new DatabaseException("Failed to add gesture to database");
         }
-        return gameService.CheckForGameUpdates(gameId);
+
+        GameUpdateResponse response;
+        try
+        {
+            response = gameService.CheckForGameUpdates(gameId);
+        }
+        catch (Exception e)
+        {
+            fileManagementService.DeleteFile(fileName);
+            gesturesRepository.DeleteGesture(newGesture);
+            throw;
+        }
+        return response;
     }
 
     public FileStreamResult GetGesture(int fileId)
@@ -59,9 +81,27 @@ public class GestureService(IFileManagementService fileManagementService, IAiMod
         var game = gameService.GetGameInfo(gesture.GameId);
         if(game.Player1.PlayerInfo.Id != user.Id && game.Player2.PlayerInfo.Id != user.Id)
         {
-            throw new UnauthorizedAccessException("User is not a player in this game");
+            throw new ForbiddenAccessException("User is not a player in this game");
         }
         return fileManagementService.GetFile(gesture.FilePath);
+    }
+
+    public bool DeleteAllUserGestures(User user)
+    {
+        var gestures = gesturesRepository.GetAllUserGestures(user.Id).ToList();
+        if (!gestures.Any())
+        {
+            return true;
+        }
+        bool deletedSuccessfully = true;
+        foreach (var gesture in gestures)
+        {
+            if(gesturesRepository.DeleteGesture(gesture) == false || fileManagementService.DeleteFile(gesture.FilePath) == false)
+            {
+                deletedSuccessfully = false;
+            }
+        }
+        return deletedSuccessfully;
     }
 
     private static void ValidateGestureAddition(GameInfoDto game, User user)
@@ -72,7 +112,7 @@ public class GestureService(IFileManagementService fileManagementService, IAiMod
         }
         if(game.Player1.PlayerInfo.Id != user.Id && game.Player2.PlayerInfo.Id != user.Id)
         {
-            throw new UnauthorizedAccessException("User is not a player in this game");
+            throw new ForbiddenAccessException("User is not a player in this game");
         }
         if(game.Status != GameStatus.InProgress)
         {

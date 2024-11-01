@@ -30,7 +30,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IUserContextService, UserContextService>();
-builder.Services.AddScoped<IGestureService, GestureService>();
+builder.Services.AddScoped<IGesturesService, GesturesService>();
 builder.Services.AddScoped<IAiModelApiService, AiModelApiService>();
 builder.Services.AddScoped<IFileManagementService, FileManagementService>();
 builder.Services.AddSingleton<IApiCacheService, ApiCacheService>();
