@@ -13,8 +13,11 @@ router = APIRouter(
     prefix="/predictions",
 )
 
-@router.post("/")
+tag = "Predictions"
+
+@router.post("", tags=[tag], summary="Predict the gesture in the image", response_model=PredictionResponseDto)
 async def predict(file: UploadFile = File(...), res = Depends(validate_token), model = Depends(get_model)) -> PredictionResponseDto:
+    print(f"Received file: {file.filename} with content type: {file.content_type}")
     try:
         content = await file.read()  
         image = Image.open(BytesIO(content)) 

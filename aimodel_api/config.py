@@ -5,8 +5,9 @@ class Settings(BaseSettings):
     app_name: str = ""
     debug: bool = False
     secret_key: str = ""
+    valid_issuer: str = ""
     
-    model_path: str = ""
+    ai_model_path: str = ""
 
     model_config = SettingsConfigDict(env_file=".env")
     

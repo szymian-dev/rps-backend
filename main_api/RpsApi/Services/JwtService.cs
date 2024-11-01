@@ -1,6 +1,7 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using RpsApi.Models.Database;
 using RpsApi.Models.DataTransferObjects;
@@ -8,15 +9,22 @@ using RpsApi.Models.DataTransferObjects.ApiModels;
 using RpsApi.Models.DataTransferObjects.FrontModels;
 using RpsApi.Models.Exceptions;
 using RpsApi.Models.Interfaces.IRepositories;
+using RpsApi.Models.Interfaces.IServices;
+using RpsApi.Models.Interfaces.ISettings;
+using RpsApi.Models.Settings;
 
 namespace RpsApi.Services;
 
 public class JwtService(
-    IConfiguration configuration,
-    IUsersRepository usersRepository,
-    IRefreshTokensRepository refreshTokensRepository) : IJwtService
+    IOptions<JwtSettings> options,
+    IOptions<JwtAiModelApiSettings> aiModelOptions,
+    IUserContextService userContextService,
+    IRefreshTokensRepository refreshTokensRepository,
+    IApiCacheService cacheService) : IJwtService
 {
-    public JwtTokenDto CreateJwToken(User user)
+    private readonly JwtSettings _settings = ValidateSettings(options.Value);
+    private readonly JwtAiModelApiSettings _aiModelSettings = ValidateSettings(aiModelOptions.Value);
+    public JwtTokenDto CreateJwtForUser(User user)
     {
         List<Claim> claims =
         [
@@ -24,50 +32,20 @@ public class JwtService(
             new(ClaimTypes.Email, user.Email),
             new(ClaimTypes.NameIdentifier, user.Id.ToString())
         ];
-        
-        var keySettings = configuration["Jwt:Key"] ?? throw new TokenCreationFailedException("Failed to create token - key missing");
-        var issuer = configuration["Jwt:Issuer"] ?? throw new TokenCreationFailedException("Failed to create token - issuer missing");
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keySettings));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-        bool succ = int.TryParse(configuration["Jwt:ExpireMinutes"], out int minutes);
-        if (!succ)
-        {
-            throw new TokenCreationFailedException("Failed to create token");
-        }
-
-        var token = new JwtSecurityToken(
-            issuer: issuer, 
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(minutes),
-            signingCredentials: creds
-        );
-
-        return new JwtTokenDto
-        {
-            Token = new JwtSecurityTokenHandler().WriteToken(token),
-            ExpiresAt = token.ValidTo,
-            TokenType = "Bearer"
-        };
+        return GenerateJwtToken(claims, _settings);
     }
 
     public RefreshTokenDto CreateOrReplaceRefreshToken(User user, Guid deviceId)
     {
-        var expirationDays = configuration.GetSection("Jwt:RefreshTokenExpireDays").Value;
-        bool succ = int.TryParse(expirationDays, out int days);
-        if (expirationDays is null || !succ)
-        {
-            throw new TokenCreationFailedException("Failed to create token");
-        }
         var refreshToken = refreshTokensRepository.GetRefreshToken(user, deviceId);
         if (refreshToken is null)
         {
-            return CreateRefreshToken(user, days, deviceId);
+            return CreateRefreshToken(user, _settings.RefreshTokenExpireDays, deviceId);
         }
         
         var newToken = Guid.NewGuid();
-        var newExpiration = DateTime.UtcNow.AddDays(days);
+        var newExpiration = DateTime.UtcNow.AddDays(_settings.RefreshTokenExpireDays);
         if(!refreshTokensRepository.ReplaceRefreshToken(refreshToken, newToken, newExpiration))
         {
             throw new TokenCreationFailedException("Failed to create token");
@@ -79,27 +57,19 @@ public class JwtService(
         };
     }
     
-    public User? GetUserFromToken(string token)
-    {
-        var handler = new JwtSecurityTokenHandler();
-        var jwtToken = handler.ReadJwtToken(token);
-        var userId = jwtToken.Claims.First(claim => claim.Type == ClaimTypes.NameIdentifier).Value;
-        return usersRepository.GetUser(int.Parse(userId));
-    }
-    
     public AuthResponse RefreshTokens(RefreshRequest request)
     {
         if (!ValidateExpiredToken(request.AccessToken))
         {
             throw new InvalidTokenException("Invalid access token");
         }
-        var user = GetUserFromToken(request.AccessToken);
+        var user = userContextService.GetUserFromToken(request.AccessToken);
         if (user is null)
         {
             throw new UserNotFoundException("User not found");
         }
         var newRefreshToken = ValidateRefreshToken(request.RefreshToken, user, request.DeviceId);
-        var newToken = CreateJwToken(user);
+        var newToken = CreateJwtForUser(user);
         return new AuthResponse
         {
             AccessToken = newToken,
@@ -121,6 +91,48 @@ public class JwtService(
     {
         return refreshTokensRepository.DeleteAllRefreshTokens(user);   
     }
+
+    public JwtTokenDto GetJwtForAiModelApi()
+    {
+        var token = cacheService.RetrieveToken();
+        if(token is null || token.ExpiresAt < DateTime.UtcNow)
+        {
+            cacheService.RetrieveToken();
+            return CreateJwtForAiModelApi();
+        }
+        return token;
+    }
+
+    public JwtTokenDto CreateJwtForAiModelApi()
+    {
+        var claims = new List<Claim>
+        {
+            new Claim("Client", "AiModelApiClient")
+        };
+        var token = GenerateJwtToken(claims, _aiModelSettings);
+        cacheService.SaveToken(token);
+        return token;
+    }
+
+    private JwtTokenDto GenerateJwtToken(IEnumerable<Claim> claims, IJwtBaseSettings settings)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Key));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
+
+        var token = new JwtSecurityToken(
+            issuer: settings.Issuer,
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(settings.ExpireMinutes),
+            signingCredentials: creds
+        );
+
+        return new JwtTokenDto
+        {
+            Token = new JwtSecurityTokenHandler().WriteToken(token),
+            ExpiresAt = token.ValidTo,
+            TokenType = "Bearer"
+        };
+    }
     
     private bool ValidateExpiredToken(string token)
     {
@@ -131,8 +143,8 @@ public class JwtService(
             ValidateAudience = false,
             ValidateIssuer = true,
             ValidateLifetime = false,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? throw new Exception("Key not found"))),
-            ValidIssuer = configuration["Jwt:Issuer"] ?? throw new Exception("Issuer not found"),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Key)),
+            ValidIssuer = _settings.Issuer,
             RequireExpirationTime = false
         }, out SecurityToken validatedToken);
         return validatedToken != null;
@@ -163,13 +175,8 @@ public class JwtService(
         {
             throw new InvalidTokenException("Invalid refresh token");
         }
-        bool succ = int.TryParse(configuration.GetSection("Jwt:RefreshTokenExpireDays").Value, out int days);
-        if (!succ)
-        {
-            throw new TokenCreationFailedException("Failed to retrieve token expiration days");
-        }
         var newToken = Guid.NewGuid();
-        var newExpiration = DateTime.UtcNow.AddDays(days);
+        var newExpiration = DateTime.UtcNow.AddDays(_settings.RefreshTokenExpireDays);
         if(!refreshTokensRepository.ReplaceRefreshToken(refreshToken, newToken, newExpiration))
         {
             throw new TokenCreationFailedException("Failed to replace token");
@@ -179,5 +186,18 @@ public class JwtService(
             Token = newToken,
             ExpiresAt = newExpiration
         };
+    }
+
+    private static T ValidateSettings<T>(T settings) where T : IJwtBaseSettings
+    {
+        if (String.IsNullOrEmpty(settings.Key) || String.IsNullOrEmpty(settings.Issuer) || settings.ExpireMinutes == 0)
+        {
+            throw new InvalidJwtSettingsException("Invalid or missing JWT settings");
+        }
+        if (settings is JwtSettings jwtSettings && jwtSettings.RefreshTokenExpireDays == 0)
+        {
+            throw new InvalidJwtSettingsException("Invalid or missing RefreshTokenExpireDays in JWT settings");
+        }
+        return settings;
     }
 }

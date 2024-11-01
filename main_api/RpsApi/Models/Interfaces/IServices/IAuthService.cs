@@ -1,4 +1,5 @@
-﻿using RpsApi.Models.DataTransferObjects.ApiModels;
+﻿using RpsApi.Models.Database;
+using RpsApi.Models.DataTransferObjects.ApiModels;
 using RpsApi.Models.DataTransferObjects.FrontModels;
 
 namespace RpsApi.Models.Interfaces.IServices;
@@ -9,8 +10,9 @@ public interface IAuthService
     AuthResponse Login(LoginRequest request);
     AuthResponse RefreshTokens(RefreshRequest request);
     bool Logout(LogoutRequest request);
-    UserResponse GetUser();
+    UserResponse GetCurrentUser();
+    UserResponse GetUser(int id);
     bool EditUser(UserEditRequest request);  
-    bool DeleteUser();
-    UserSearchResponse SearchUsers(UserSearchRequest request);
+    DeleteUserResponse DeleteUser();
+    PagedResponse<UserResponse> SearchUsers(UserSearchRequest request);
 }

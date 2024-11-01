@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -8,6 +9,7 @@ using RpsApi.Database;
 using RpsApi.Models.Interfaces.IRepositories;
 using RpsApi.Models.Interfaces.IServices;
 using RpsApi.Models.Middlewares;
+using RpsApi.Models.Settings;
 using RpsApi.Repositories;
 using RpsApi.Services;
 using Swashbuckle.AspNetCore.Filters;
@@ -18,17 +20,49 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
         options.UseNpgsql(builder.Configuration.GetConnectionString("RpsDatabaseConnection")));
 
-// Add services to the container.
+// Add services and repositories to the container.
 builder.Services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<IGamesRepository, GamesRepository>();
+builder.Services.AddScoped<IGesturesRepository, GesturesRepository>();
+
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
+builder.Services.AddScoped<IGesturesService, GesturesService>();
+builder.Services.AddScoped<IAiModelApiService, AiModelApiService>();
+builder.Services.AddScoped<IFileManagementService, FileManagementService>();
+builder.Services.AddSingleton<IApiCacheService, ApiCacheService>();
 
+// Add settings to the configuration
+builder.Services.Configure<FileSettings>(builder.Configuration.GetSection("FileSettings"));
+builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+builder.Services.Configure<AiModelApiSettings>(builder.Configuration.GetSection("AiModelApiSettings"));
+builder.Services.Configure<JwtAiModelApiSettings>(builder.Configuration.GetSection("JwtAiModelApiSettings"));
+
+// Add HttpClients
+builder.Services.AddHttpClient<IAiModelApiService, AiModelApiService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["AiModelApiSettings:Url"] ?? throw new Exception("AiModelApiSettings:Url not found"));
+});
+
+builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "RPS Main API",  
+        Version = "v1",
+        Description = "Main API for the Rock-Paper-Scissors game",
+    });
     // JWT Access Token
     options.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
     {
@@ -103,7 +137,10 @@ app.UseCors();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(o =>
+    {
+        o.DisplayRequestDuration();
+    });
 }
 
 app.UseHttpsRedirection();

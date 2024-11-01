@@ -11,7 +11,9 @@ namespace RpsApi.Services;
 public class AuthService(
     IJwtService jwtService,
     IUsersRepository usersRepository,
-    IHttpContextAccessor httpContextAccessor
+    IUserContextService userContextService,
+    IGameService gameService,
+    IGesturesService gesturesService
     ) : IAuthService
 {
     public AuthResponse Register(RegisterRequest request)
@@ -58,7 +60,7 @@ public class AuthService(
     
     public bool Logout(LogoutRequest request)
     {
-        var user = GetCurrentUserFromHttpContext();
+        var user = userContextService.GetCurrentUser();
         if (request.DeviceId is null)
         {
             return jwtService.RevokeAllRefreshTokens(user);
@@ -76,9 +78,24 @@ public class AuthService(
         return jwtService.RefreshTokens(request);
     }
 
-    public UserResponse GetUser()
+    public UserResponse GetCurrentUser()
     {
-        var user = GetCurrentUserFromHttpContext();
+        var user = userContextService.GetCurrentUser();
+        return new UserResponse
+        {
+            Id = user.Id,
+            Username = user.Username,
+            Email = user.Email
+        };
+    }
+
+    public UserResponse GetUser(int id)
+    {
+        var user = usersRepository.GetUser(id);
+        if (user is null)
+        {
+            throw new UserNotFoundException("User not found");
+        }
         return new UserResponse
         {
             Id = user.Id,
@@ -89,7 +106,7 @@ public class AuthService(
 
     public bool EditUser(UserEditRequest request)
     {
-        var user = GetCurrentUserFromHttpContext();
+        var user = userContextService.GetCurrentUser();
         if(!string.IsNullOrEmpty(request.NewUsername) && request.NewUsername != user.Username)
         {
             if(usersRepository.GetUser(request.NewUsername) is not null)
@@ -105,6 +122,7 @@ public class AuthService(
             {
                 throw new UserAlreadyExistsException("User with that email already exists!");
             }
+            user.Email = request.NewEmail;
         }
 
         if (!string.IsNullOrEmpty(request.NewPassword))
@@ -119,28 +137,30 @@ public class AuthService(
         return usersRepository.UpdateUser(user);
     }
 
-    public bool DeleteUser()
+    public DeleteUserResponse DeleteUser()
     {
-        var user = GetCurrentUserFromHttpContext();
-        jwtService.RevokeAllRefreshTokens(user);
-        return usersRepository.DeleteUser(user);
+        var user = userContextService.GetCurrentUser();
+        return new DeleteUserResponse()
+        {
+            GamesCancelledMatchRowsChanged = gameService.CancelAllUserGames(user),
+            RefreshTokensDeletedMatchRowsChanged = jwtService.RevokeAllRefreshTokens(user),
+            GesturesDeletedMatchRowsChanged = gesturesService.DeleteAllUserGestures(user),
+            UserDeleted = usersRepository.DeleteUser(user)
+        };
     }
     
-    public UserSearchResponse SearchUsers(UserSearchRequest request)
+    public PagedResponse<UserResponse> SearchUsers(UserSearchRequest request)
     {
         var filteredUsers = usersRepository.GetUsers()
             .Where(u => u.Username.Contains(request.SearchTerm) || u.Email.Contains(request.SearchTerm));
-        int totalUsers = filteredUsers.Count();
-        int totalPages = (int)Math.Ceiling((double)totalUsers / request.PageSize);
-        
-        int pageNumber = request.PageNumber;
-        if (request.PageNumber > totalPages)
+        var calculatedPagination = PaginationHelper.CalculatePagination(filteredUsers, request.PageNumber, request.PageSize);
+        if (calculatedPagination.TotalCount == 0)
         {
-            pageNumber = totalPages;
+            return PaginationHelper.EmptyResponse<UserResponse>(request.PageSize);
         }
         var userList = filteredUsers
             .ApplyOrdering(request.Ascending, request.SortBy)
-            .ApplyPagination(pageNumber, request.PageSize)
+            .ApplyPagination(calculatedPagination.PageNumber, calculatedPagination.PageSize)
             .Select(x => new UserResponse
             {
                 Id = x.Id,
@@ -148,39 +168,24 @@ public class AuthService(
                 Email = x.Email,
             })
             .ToList();
-        return new UserSearchResponse
+        return new PagedResponse<UserResponse>()
         {
-            Users = userList,
-            TotalCount = totalUsers,
-            TotalPages = totalPages,
-            CurrentPage = pageNumber,
-            PageSize = request.PageSize
+            Items = userList,
+            PageNumber = calculatedPagination.PageNumber,
+            PageSize = calculatedPagination.PageSize,
+            TotalCount = calculatedPagination.TotalCount,
+            TotalPages = calculatedPagination.TotalPages
         };
     }
     
     private AuthResponse CreateSuccessAuthResponse(User user, Guid deviceId)
     {
-        var token = jwtService.CreateJwToken(user);
+        var token = jwtService.CreateJwtForUser(user);
         var refreshToken = jwtService.CreateOrReplaceRefreshToken(user, deviceId);
         return new AuthResponse
         {
             AccessToken = token,
             RefreshToken = refreshToken
         };
-    }
-    
-    private User GetCurrentUserFromHttpContext()
-    {
-        var token = httpContextAccessor.GetJwtToken();
-        if (string.IsNullOrEmpty(token))
-        {
-            throw new InvalidTokenException("Could not find token in http context");
-        }
-        var user = jwtService.GetUserFromToken(token);
-        if (user is null)
-        {
-            throw new UserNotFoundException("User not found");
-        }
-        return user;
     }
 }

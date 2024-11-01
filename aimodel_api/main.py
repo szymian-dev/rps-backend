@@ -1,5 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+import logging
 
 from .routers import predictions
 from .config import settings
@@ -21,5 +23,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def startup_event():
     get_model()
-
-app.include_router(predictions.router)
+    
+api_router = APIRouter(prefix="/api/v1")
+api_router.include_router(predictions.router)
+app.include_router(api_router)

@@ -7,10 +7,11 @@ namespace RpsApi.Services;
 
 public interface IJwtService
 {
-    JwtTokenDto CreateJwToken(User user);
+    JwtTokenDto CreateJwtForUser(User user);
     RefreshTokenDto CreateOrReplaceRefreshToken(User user, Guid deviceId);
-    User? GetUserFromToken(string token);
     AuthResponse RefreshTokens(RefreshRequest request);
     bool RevokeRefreshToken(User user, Guid deviceId);
     bool RevokeAllRefreshTokens(User user);
+    JwtTokenDto GetJwtForAiModelApi();
+    JwtTokenDto CreateJwtForAiModelApi();
 }
