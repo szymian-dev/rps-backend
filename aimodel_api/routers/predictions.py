@@ -15,6 +15,7 @@ router = APIRouter(
 
 @router.post("/")
 async def predict(file: UploadFile = File(...), res = Depends(validate_token), model = Depends(get_model)) -> PredictionResponseDto:
+    print(f"Received file: {file.filename} with content type: {file.content_type}")
     try:
         content = await file.read()  
         image = Image.open(BytesIO(content)) 
