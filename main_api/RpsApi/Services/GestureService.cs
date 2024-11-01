@@ -20,7 +20,18 @@ public class GestureService(IFileManagementService fileManagementService, IAiMod
         
         string fileName = fileManagementService.UploadFile(file);
         string filePath = Path.Combine(fileManagementService.GetUploadDirectoryPath(), fileName);
-        GestureType gestureType = await aiModelApiService.AnalyzeGesture(filePath);
+        
+        GestureType gestureType;
+        try
+        {
+            gestureType = await aiModelApiService.AnalyzeGesture(filePath);
+        }
+        catch (AiModelApiException e)
+        {
+            fileManagementService.DeleteFile(fileName);
+            throw;
+        }
+        
         var newGesture = new Gesture
         {
             GestureType = gestureType,

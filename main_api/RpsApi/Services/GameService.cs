@@ -11,7 +11,7 @@ using RpsApi.Utils;
 namespace RpsApi.Services;
 
 public class GameService(IUserContextService userContextService,
-    IGamesRepository gamesRepository, IGesturesRepository gesturesRepository, IUsersRepository usersRepository) : IGameService
+    IGamesRepository gamesRepository, IUsersRepository usersRepository) : IGameService
 {
     public NewGameResponse StartNewGame(NewGameRequest request)
     {

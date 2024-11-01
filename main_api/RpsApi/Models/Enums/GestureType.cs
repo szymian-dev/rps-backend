@@ -2,7 +2,7 @@
 
 public enum GestureType
 {
-    Rock = 0,
-    Paper = 1,
+    Rock = 1,
+    Paper = 0,
     Scissors = 2
 }

@@ -117,7 +117,7 @@ public class JwtService(
     private JwtTokenDto GenerateJwtToken(IEnumerable<Claim> claims, IJwtBaseSettings settings)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings.Key));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
         var token = new JwtSecurityToken(
             issuer: settings.Issuer,

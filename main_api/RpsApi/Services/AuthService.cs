@@ -121,6 +121,7 @@ public class AuthService(
             {
                 throw new UserAlreadyExistsException("User with that email already exists!");
             }
+            user.Email = request.NewEmail;
         }
 
         if (!string.IsNullOrEmpty(request.NewPassword))

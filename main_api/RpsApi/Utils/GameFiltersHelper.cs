@@ -1,6 +1,7 @@
 ﻿using RpsApi.Models.Database;
 using RpsApi.Models.DataTransferObjects;
 using RpsApi.Models.Enums;
+using RpsApi.Models.Exceptions;
 
 namespace RpsApi.Utils;
 
@@ -20,6 +21,10 @@ public static class GameFiltersHelper
 
         if (filters.OpponentId.HasValue)
         {
+            if (filters.OpponentId == user.Id)
+            {
+                throw new InvalidFilterStateException("User cannot be their own opponent");
+            }
             query = query.Where(g => g.Player1Id == filters.OpponentId || g.Player2Id == filters.OpponentId);
         }
 
