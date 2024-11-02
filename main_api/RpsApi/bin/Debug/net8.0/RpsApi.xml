@@ -239,6 +239,39 @@
             <response code="404"> Gesture file with that id does not exist. </response>
             <response code="403"> User is not a participant in the game. </response>
         </member>
+        <member name="T:RpsApi.Controllers.StatsController">
+            <summary>
+                Controller for statistics related actions e.g. getting statistics about the user, leaderboard.
+            </summary>
+        </member>
+        <member name="M:RpsApi.Controllers.StatsController.#ctor(RpsApi.Models.Interfaces.IServices.IStatsService)">
+            <summary>
+                Controller for statistics related actions e.g. getting statistics about the user, leaderboard.
+            </summary>
+        </member>
+        <member name="M:RpsApi.Controllers.StatsController.GetPlayerStats">
+            <summary>
+                Get the player statistics for the current user.
+            </summary>
+            <returns>
+               Player stats object containing the player statistics.
+            </returns>
+            <response code="200">Player statistics retrieved successfully</response>
+            <response code="401">Unauthorized</response>
+        </member>
+        <member name="M:RpsApi.Controllers.StatsController.GetLeaderboard(RpsApi.Models.DataTransferObjects.FrontModels.LeaderboardRequest)">
+            <summary>
+                Get the leaderboard of players.
+            </summary>
+            <param name="request">
+                Request object containing the page number, page size, sort by and order.
+            </param>
+            <returns>
+                Paged response containing the leaderboard of players.
+            </returns>
+            <response code="200">Leaderboard retrieved successfully</response>
+            <response code="401">Unauthorized</response>
+        </member>
         <member name="T:RpsApi.Migrations.NewBeginning">
             <inheritdoc />
         </member>

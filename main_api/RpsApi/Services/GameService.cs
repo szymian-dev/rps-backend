@@ -11,7 +11,7 @@ using RpsApi.Utils;
 namespace RpsApi.Services;
 
 public class GameService(IUserContextService userContextService,
-    IGamesRepository gamesRepository, IUsersRepository usersRepository) : IGameService
+    IGamesRepository gamesRepository, IUsersRepository usersRepository, IStatsService statsService) : IGameService
 {
     public NewGameResponse StartNewGame(NewGameRequest request)
     {
@@ -147,6 +147,7 @@ public class GameService(IUserContextService userContextService,
         var game = GetGameInfo(gameId);
         var result = GameUpdateHelper.CheckAndUpdateGame(game);
         
+        // Np action required 
         if (result.Action == GameUpdateAction.NoAction)
         {
             return new GameUpdateResponse
@@ -172,6 +173,10 @@ public class GameService(IUserContextService userContextService,
         {
             throw new DatabaseException("Failed to update game state in the database");
         }  
+        if(!UpdatePlayerStats(result, gameDb))
+        {
+            throw new DatabaseException("Failed to update player stats in the database");
+        }
         
         return new GameUpdateResponse
         {
@@ -209,5 +214,48 @@ public class GameService(IUserContextService userContextService,
             } : null
         };
     }
+
+    private bool UpdatePlayerStats(GameUpdateDto result, Game game)
+    {
+        if(game.Status != GameStatus.Completed)
+        {
+            return true;
+        }
+        if(game.Player1Id is null || game.Player2Id is null)
+        {
+            throw new InvalidGameStateException("Game is missing player information");
+        }
+
+        bool success;
+        switch (result.Action)
+        {
+            case GameUpdateAction.Player1Wins:
+                success = ApplyStatsUpdate(game.Player1Id.Value, WinStatus.Won, game.Player2Id.Value, WinStatus.Lost);
+                break;
+            case GameUpdateAction.Player2Wins:
+                success = ApplyStatsUpdate(game.Player1Id.Value, WinStatus.Lost, game.Player2Id.Value, WinStatus.Won);
+                break;
+            case GameUpdateAction.Draw:
+                success = ApplyStatsUpdate(game.Player1Id.Value, WinStatus.Draw, game.Player2Id.Value, WinStatus.Draw); 
+                break;
+            default:
+                throw new InvalidGameStateException("Invalid game result");
+        }
+        return success;
+    }
     
+    private bool ApplyStatsUpdate(int player1Id, WinStatus player1WinStatus, int player2Id, WinStatus player2WinStatus)
+    {
+        var player1Updated = statsService.UpdatePlayerStats(new StatsUpdate
+        {
+            UserId = player1Id,
+            WinStatus = player1WinStatus
+        });
+        var player2Updated = statsService.UpdatePlayerStats(new StatsUpdate
+        {
+            UserId = player2Id,
+            WinStatus = player2WinStatus
+        });
+        return player1Updated && player2Updated;
+    }
 }

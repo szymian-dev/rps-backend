@@ -25,6 +25,7 @@ builder.Services.AddScoped<IRefreshTokensRepository, RefreshTokensRepository>();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<IGamesRepository, GamesRepository>();
 builder.Services.AddScoped<IGesturesRepository, GesturesRepository>();
+builder.Services.AddScoped<IStatsRepository, StatsRepository>();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -34,6 +35,7 @@ builder.Services.AddScoped<IGesturesService, GesturesService>();
 builder.Services.AddScoped<IAiModelApiService, AiModelApiService>();
 builder.Services.AddScoped<IFileManagementService, FileManagementService>();
 builder.Services.AddSingleton<IApiCacheService, ApiCacheService>();
+builder.Services.AddScoped<IStatsService, StatsService>();
 
 // Add settings to the configuration
 builder.Services.Configure<FileSettings>(builder.Configuration.GetSection("FileSettings"));
