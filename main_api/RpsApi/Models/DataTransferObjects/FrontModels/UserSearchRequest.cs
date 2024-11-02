@@ -4,8 +4,8 @@ namespace RpsApi.Models.DataTransferObjects.FrontModels;
 
 public class UserSearchRequest
 {
-    [DefaultValue("string")]
-    public string SearchTerm { get; set; } = null!;
+    [DefaultValue("")] 
+    public string SearchTerm { get; set; } = String.Empty;
     [DefaultValue(1)]
     public int PageNumber { get; set; } = 1;
     [DefaultValue(10)]

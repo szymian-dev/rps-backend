@@ -83,6 +83,11 @@ public class GesturesService(IFileManagementService fileManagementService, IAiMo
         {
             throw new ForbiddenAccessException("User is not a player in this game");
         }
+
+        if (game.Status != GameStatus.Completed && gesture.UserId != user.Id)
+        {
+            throw new ForbiddenAccessException("Game is not yet completed");
+        }
         return fileManagementService.GetFile(gesture.FilePath);
     }
 
