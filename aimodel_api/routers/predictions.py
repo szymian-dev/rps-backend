@@ -1,42 +1,44 @@
 from fastapi import APIRouter, Depends, File, UploadFile, HTTPException
 from PIL import Image
+from io import BytesIO  
+import numpy as np
 
 from ..auth.jwt_handler import validate_token
 from ..config import settings
 from ..utils.image_processing import prepare_image_for_prediction
 from ..models import PredictionResponseDto, GestureType
-from ..aimodel.aimodel import model
+from ..aimodel.aimodel import get_model  
 
 router = APIRouter(
     prefix="/predictions",
 )
 
-@router.post("/")
-async def predict(file: UploadFile = File(...), res = Depends(validate_token)) -> PredictionResponseDto:
-    image = None
+tag = "Predictions"
+
+@router.post("", tags=[tag], summary="Predict the gesture in the image", response_model=PredictionResponseDto)
+async def predict(file: UploadFile = File(...), res = Depends(validate_token), model = Depends(get_model)) -> PredictionResponseDto:
+    print(f"Received file: {file.filename} with content type: {file.content_type}")
     try:
-        content = await file.read()
-        image = Image.open(BytesIO(contents))
+        content = await file.read()  
+        image = Image.open(BytesIO(content)) 
     except Exception as e:
         raise HTTPException(status_code=400, detail="Invalid image file")
+
     image = _process_image(image)
-    predicted_class = _predict(image)
+    predicted_class = _predict(image, model)
+
+
     return PredictionResponseDto(prediction=predicted_class)
-    
-    
-    
-    
+
 def _process_image(image):
     image = prepare_image_for_prediction(image)
     return image
 
-def _predict(image):
-    prediction = None
+def _predict(image, model):
     try:
         prediction = model.predict(image)
     except Exception as e:
         raise HTTPException(status_code=500, detail="Error predicting image")
-    
-    predicted_class = GestureType(int(np.argmax(prediction)))
-    return prediction
 
+    predicted_class = GestureType(int(np.argmax(prediction)))
+    return predicted_class
