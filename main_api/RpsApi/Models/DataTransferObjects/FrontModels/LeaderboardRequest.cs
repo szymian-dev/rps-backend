@@ -8,8 +8,4 @@ public class LeaderboardRequest
     public int PageNumber { get; set; } = 1;
     [DefaultValue(10)]
     public int PageSize { get; set; } = 10;
-    [DefaultValue("Wins")]
-    public string SortBy { get; set; } = "Wins";
-    [DefaultValue(false)]
-    public bool Ascending { get; set; } = false;
 }

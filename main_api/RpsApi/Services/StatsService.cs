@@ -32,7 +32,10 @@ public class StatsService(IStatsRepository statsRepository, IUserContextService 
         }
         var calculatedPagination = PaginationHelper.CalculatePagination(stats, request.PageNumber, request.PageSize);
         var leaderboard = stats
-            .ApplyOrdering(request.Ascending, request.SortBy)
+            .OrderByDescending(s => s.Wins)
+            .ThenByDescending(s => s.Ties)
+            .ThenBy(s => s.Losses)
+            .ThenByDescending(s => s.GamesPlayed)
             .ApplyPagination(calculatedPagination.PageNumber, calculatedPagination.PageSize)
             .Select(s => MapPlayerStatsToDto(s))
             .ToList();
