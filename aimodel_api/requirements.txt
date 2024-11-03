@@ -7,4 +7,4 @@ pydantic_settings==2.6.1
 PyJWT==2.9.0
 rembg==2.0.59
 tensorflow==2.16.1
-tensorflow_intel==2.16.1
+

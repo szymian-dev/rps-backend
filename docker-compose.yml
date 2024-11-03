@@ -1,0 +1,43 @@
+services:
+  api:
+    build:
+      context: ./main_api/RpsApi/
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080" 
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORT=8080
+      - ConnectionStrings__RpsDatabaseConnection=Host=db;Port=5432;Database=RPS;Username=RPSuser;Password=rps1234;
+    depends_on:
+      - db
+
+  ai_model_api:
+    build:
+      context: ./aimodel_api/ 
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" 
+    env_file:
+      - ./aimodel_api/.env 
+    environment:
+      - AI_MODEL_PATH=/app/models/cnn_reguliarized_1.h5  
+      - DEBUG=True
+    volumes:
+      - ../aimodel/models:/app/models
+
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: RPSuser
+      POSTGRES_PASSWORD: rps1234
+      POSTGRES_DB: RPS
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d  
+
+volumes:
+  postgres_data:
+    driver: local
