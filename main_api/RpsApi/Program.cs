@@ -136,7 +136,8 @@ app.UseMiddleware<ExceptionHandler>();
 app.UseCors();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+bool enableSwagger = builder.Configuration.GetValue<bool>("EnableSwagger");
+if (enableSwagger)
 {
     app.UseSwagger();
     app.UseSwaggerUI(o =>

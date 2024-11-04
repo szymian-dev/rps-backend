@@ -1,17 +1,22 @@
 services:
-  api:
+  main_api:
     build:
       context: ./main_api/RpsApi/
       dockerfile: Dockerfile
     ports:
       - "9020:8080" 
+    container_name: main_api
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_HTTP_PORT=8080
-      - ConnectionStrings__RpsDatabaseConnection=Host=db;Port=5432;Database=RPS;Username=RPSuser;Password=rps1234;
+      - ConnectionStrings__RpsDatabaseConnection=Host=postgres_db;Port=5432;Database=RPS;Username=RPSuser;Password=rps1234;
       - AiModelApiSettings__Url=http://ai_model_api:8000/api/v1/
+      - FileSettings__UploadPath=/app/images  
+      - EnableSwagger=true
     depends_on:
-      - db
+      - postgres_db
+    volumes:
+      - ./main_api/Uploads:/app/images  
 
   ai_model_api:
     build:
@@ -19,6 +24,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "9030:8000" 
+    container_name: ai_model_api
     env_file:
       - ./aimodel_api/.env 
     environment:
@@ -27,18 +33,18 @@ services:
     volumes:
       - ../aimodel/models:/app/models
 
-  db:
-    image: postgres:15
+  postgres_db:
+    image: postgres:17
     environment:
       POSTGRES_USER: RPSuser
       POSTGRES_PASSWORD: rps1234
       POSTGRES_DB: RPS
     ports:
       - "9010:5432"
+    container_name: postgres_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db-init:/docker-entrypoint-initdb.d  
-
 volumes:
   postgres_data:
     driver: local
