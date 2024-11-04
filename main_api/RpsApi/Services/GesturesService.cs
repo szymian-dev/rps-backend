@@ -88,7 +88,23 @@ public class GesturesService(IFileManagementService fileManagementService, IAiMo
         {
             throw new ForbiddenAccessException("Game is not yet completed");
         }
-        return fileManagementService.GetFile(gesture.FilePath);
+
+        FileStreamResult fileStream;
+        try
+        {
+            fileStream = fileManagementService.GetFile(gesture.FilePath);
+        }
+        catch (FileNotFoundException e)
+        {
+            var exc = new InvalidGameStateException("Gesture file not found, but record in the database. Removing gesture from database", e);
+            var result = gesturesRepository.DeleteGesture(gesture);
+            if (!result)
+            {
+                throw new DatabaseException("Failed to remove gesture from database", exc);
+            }
+            throw exc;
+        }
+        return fileStream;
     }
 
     public bool DeleteAllUserGestures(User user)
