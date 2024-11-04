@@ -54,12 +54,8 @@ public class GesturesController(IGesturesService gesturesService)
     /// <response code="404"> Gesture file with that id does not exist. </response>
     /// <response code="403"> User is not a participant in the game. </response>
     [HttpGet("{fileId}")]
-    public ApiResponse<FileStreamResult> GetGesture(int fileId)
+    public FileStreamResult GetGesture(int fileId)
     {
-        return new ApiResponse<FileStreamResult>()
-        {
-            Data = gesturesService.GetGesture(fileId),
-            Message = "Gesture file downloaded successfully."
-        };
+        return gesturesService.GetGesture(fileId);
     }
 }
