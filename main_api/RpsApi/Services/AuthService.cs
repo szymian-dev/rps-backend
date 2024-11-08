@@ -1,9 +1,12 @@
-﻿using RpsApi.Models.Database;
+﻿using Microsoft.Extensions.Options;
+using RpsApi.Models.Database;
+using RpsApi.Models.DataTransferObjects;
 using RpsApi.Models.DataTransferObjects.ApiModels;
 using RpsApi.Models.DataTransferObjects.FrontModels;
 using RpsApi.Models.Exceptions;
 using RpsApi.Models.Interfaces.IRepositories;
 using RpsApi.Models.Interfaces.IServices;
+using RpsApi.Models.Settings;
 using RpsApi.Utils;
 
 namespace RpsApi.Services;
@@ -13,10 +16,12 @@ public class AuthService(
     IUsersRepository usersRepository,
     IUserContextService userContextService,
     IGameService gameService,
-    IGesturesService gesturesService
+    IGesturesService gesturesService,
+    IOptions<CookieSettings> cookieOptions
     ) : IAuthService
 {
-    public AuthResponse Register(RegisterRequest request)
+    private readonly CookieSettings _cookieSettings = ValidateSettings(cookieOptions.Value);
+    public AuthResponse Register(RegisterRequest request, HttpContext httpContext)
     {
         if (usersRepository.GetUser(request.Username) is not null )
         {
@@ -40,10 +45,10 @@ public class AuthService(
             throw new UserCreationFailedException("Failed to create user");
         }
 
-        return CreateSuccessAuthResponse(user, request.DeviceId);
+        return CreateSuccessAuthResponse(user, request.DeviceId, httpContext);
     }
 
-    public AuthResponse Login(LoginRequest request)
+    public AuthResponse Login(LoginRequest request, HttpContext httpContext)
     {
         var user = usersRepository.GetUserByUsernameOrEmail(request.Username);
         if (user is null)
@@ -55,7 +60,7 @@ public class AuthService(
         {
             throw new InvalidPasswordException("Invalid password");
         }
-        return CreateSuccessAuthResponse(user, request.DeviceId);
+        return CreateSuccessAuthResponse(user, request.DeviceId, httpContext);
     }
     
     public bool Logout(LogoutRequest request)
@@ -73,9 +78,23 @@ public class AuthService(
         return true;
     }
 
-    public AuthResponse RefreshTokens(RefreshRequest request)
+    public AuthResponse RefreshTokens(RefreshRequest request, HttpContext httpContext)
     {
-        return jwtService.RefreshTokens(request);
+        var token = httpContext.Request.GetRefreshTokenFromCookies();
+        if (token is null)
+        {
+            throw new InvalidTokenException("Refresh token not found in HTTP request");
+        }
+        if(Guid.TryParse(token, out var refreshToken) is false)
+        {
+            throw new InvalidTokenException("Invalid refresh token");
+        }
+        var authDto = jwtService.RefreshTokens(request, refreshToken);
+        AddRefreshTokenToCookies(authDto.RefreshToken, httpContext);
+        return new AuthResponse
+        {
+            AccessToken = authDto.AccessToken
+        };
     }
 
     public UserResponse GetCurrentUser()
@@ -178,14 +197,35 @@ public class AuthService(
         };
     }
     
-    private AuthResponse CreateSuccessAuthResponse(User user, Guid deviceId)
+    private AuthResponse CreateSuccessAuthResponse(User user, Guid deviceId, HttpContext httpContext)
     {
         var token = jwtService.CreateJwtForUser(user);
         var refreshToken = jwtService.CreateOrReplaceRefreshToken(user, deviceId);
+        AddRefreshTokenToCookies(refreshToken, httpContext);
         return new AuthResponse
         {
             AccessToken = token,
-            RefreshToken = refreshToken
         };
+    }
+    
+    private void AddRefreshTokenToCookies(RefreshTokenDto refreshTokenDto, HttpContext httpContext)
+    {
+        httpContext.Response.Cookies.Append("refreshToken", refreshTokenDto.Token.ToString(), new CookieOptions
+        {
+            HttpOnly = _cookieSettings.HttpOnly,
+            Secure = _cookieSettings.Secure,
+            SameSite = Enum.Parse<SameSiteMode>(_cookieSettings.SameSite),
+            Expires = refreshTokenDto.ExpiresAt
+        });
+    }
+    
+    private static CookieSettings ValidateSettings(CookieSettings settings)
+    {
+        // throw error if value is other than Lax, Strict or None
+        if (settings.SameSite != "Lax" && settings.SameSite != "Strict" && settings.SameSite != "None")
+        {
+            throw new InvalidSettingsException("Invalid SameSite value");
+        }
+        return settings;
     }
 }

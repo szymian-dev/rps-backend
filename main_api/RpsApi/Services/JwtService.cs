@@ -57,7 +57,7 @@ public class JwtService(
         };
     }
     
-    public AuthResponse RefreshTokens(RefreshRequest request)
+    public AuthDto RefreshTokens(RefreshRequest request, Guid refreshToken)
     {
         if (!ValidateExpiredToken(request.AccessToken))
         {
@@ -68,9 +68,9 @@ public class JwtService(
         {
             throw new UserNotFoundException("User not found");
         }
-        var newRefreshToken = ValidateRefreshToken(request.RefreshToken, user, request.DeviceId);
+        var newRefreshToken = ValidateRefreshToken(refreshToken, user, request.DeviceId);
         var newToken = CreateJwtForUser(user);
-        return new AuthResponse
+        return new AuthDto
         {
             AccessToken = newToken,
             RefreshToken = newRefreshToken
