@@ -40,7 +40,7 @@ services:
       POSTGRES_PASSWORD: rps1234
       POSTGRES_DB: RPS
     ports:
-      - "9010:5432"
+      - "9020:5432"
     container_name: postgres_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -53,7 +53,7 @@ services:
       - PGADMIN_DEFAULT_EMAIL=admin@admin.com  
       - PGADMIN_DEFAULT_PASSWORD=admin         
     ports:
-      - "5050:80"
+      - "9010:80"
     depends_on:
       - postgres_db
     links:

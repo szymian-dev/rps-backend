@@ -42,6 +42,7 @@ builder.Services.Configure<FileSettings>(builder.Configuration.GetSection("FileS
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<AiModelApiSettings>(builder.Configuration.GetSection("AiModelApiSettings"));
 builder.Services.Configure<JwtAiModelApiSettings>(builder.Configuration.GetSection("JwtAiModelApiSettings"));
+builder.Services.Configure<CookieSettings>(builder.Configuration.GetSection("CookieSettings"));
 
 // Add HttpClients
 builder.Services.AddHttpClient<IAiModelApiService, AiModelApiService>(client =>

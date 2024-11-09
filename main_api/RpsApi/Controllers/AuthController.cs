@@ -29,8 +29,8 @@ public class AuthController(IAuthService service) : ControllerBase
     {
         return new ApiResponse<AuthResponse>()
         {
-            Data = service.Register(request),
-            Message = "User registered successfully. Response contains access token and refresh token with their expiration time."
+            Data = service.Register(request, HttpContext),
+            Message = "User registered successfully. Response contains access token with its expiration time and set-cookie header with refresh token."
         };
     }
     
@@ -50,8 +50,8 @@ public class AuthController(IAuthService service) : ControllerBase
     {
         return new ApiResponse<AuthResponse>()
         {
-            Data = service.Login(request),
-            Message = "User logged in successfully. Response contains access token and refresh token with their expiration time."
+            Data = service.Login(request, HttpContext),
+            Message = "User logged in successfully. Response contains access token with its expiration time and set-cookie header with refresh token."
         };
     }
     
@@ -72,8 +72,8 @@ public class AuthController(IAuthService service) : ControllerBase
     {
         return new ApiResponse<AuthResponse>()
         {
-            Data = service.RefreshTokens(request),
-            Message = "Access token refreshed successfully. Response contains new access token and refresh token with their expiration time."
+            Data = service.RefreshTokens(request, HttpContext),
+            Message = "Access token refreshed successfully. Response contains new access token with its expiration time and set-cookie header with new refresh token."
         };
     }
     

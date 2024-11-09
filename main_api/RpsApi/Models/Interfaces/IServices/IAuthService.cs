@@ -6,9 +6,9 @@ namespace RpsApi.Models.Interfaces.IServices;
 
 public interface IAuthService
 {
-    AuthResponse Register(RegisterRequest request);
-    AuthResponse Login(LoginRequest request);
-    AuthResponse RefreshTokens(RefreshRequest request);
+    AuthResponse Register(RegisterRequest request, HttpContext httpContext);
+    AuthResponse Login(LoginRequest request, HttpContext httpContext);
+    AuthResponse RefreshTokens(RefreshRequest request, HttpContext httpContext);
     bool Logout(LogoutRequest request);
     UserResponse GetCurrentUser();
     UserResponse GetUser(int id);
