@@ -134,7 +134,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandler>();
-app.UseCors();
+app.UseCors(allowedOriginsPolicy);
 
 // Configure the HTTP request pipeline.
 bool enableSwagger = builder.Configuration.GetValue<bool>("EnableSwagger");
