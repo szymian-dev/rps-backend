@@ -4,7 +4,7 @@ services:
       context: ./main_api/RpsApi/
       dockerfile: Dockerfile
     ports:
-      - "9020:8080" 
+      - "9040:8080" 
     container_name: main_api
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
@@ -28,7 +28,7 @@ services:
     env_file:
       - ./aimodel_api/.env 
     environment:
-      - AI_MODEL_PATH=/app/models/cnn_reguliarized_1.h5  
+      - AI_MODEL_PATH=/app/models/cnn_reguliarized.h5  
       - DEBUG=True
     volumes:
       - ../aimodel/models:/app/models

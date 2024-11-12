@@ -2,14 +2,10 @@ from PIL import Image
 import os
 from tensorflow.keras.preprocessing import image
 import numpy as np
-from rembg import remove
+#from rembg import remove
 
 
 def prepare_image_for_prediction(img, target_size=(224, 224)):
-    img = remove(img)  
-    green_background = Image.new("RGB", img.size, (38, 150, 62))
-    green_background.paste(img, (0, 0), img)
-    img = green_background
     img = img.resize(target_size)
     img_array = image.img_to_array(img)
     # Expand dimensions (1, 224, 224, 3) because the model expects a batch of images
