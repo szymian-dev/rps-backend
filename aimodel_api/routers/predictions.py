@@ -7,7 +7,7 @@ from ..auth.jwt_handler import validate_token
 from ..config import settings
 from ..utils.image_processing import prepare_image_for_prediction
 from ..models import PredictionResponseDto, GestureType
-from ..aimodel.aimodel import get_model  
+from ..aimodel.aimodels import get_model  
 
 router = APIRouter(
     prefix="/predictions",
@@ -16,7 +16,7 @@ router = APIRouter(
 tag = "Predictions"
 
 @router.post("", tags=[tag], summary="Predict the gesture in the image", response_model=PredictionResponseDto)
-async def predict(file: UploadFile = File(...), res = Depends(validate_token), model = Depends(get_model)) -> PredictionResponseDto:
+async def predict(file: UploadFile = File(...), res = Depends(validate_token), model = None) -> PredictionResponseDto:
     print(f"Received file: {file.filename} with content type: {file.content_type}")
     try:
         content = await file.read()  

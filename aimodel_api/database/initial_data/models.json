@@ -1,0 +1,20 @@
+[
+    {
+        "name": "Grayscale CNN Model",
+        "description": "A CNN model trained on grayscale gesture images to recognize various hand gestures in a simple black-and-white format.",
+        "path_to_model": "cnn_medium_100_epochs_ckp.keras",
+        "transformations": []
+    },
+    {
+        "name": "CNN Mediapipe",
+        "description": "A CNN model that uses Mediapipe to extract key gesture features, which are then used to emulate segmentation in a machine learning pipeline.",
+        "path_to_model": "cnn_medium_100_epochs_ckp.keras",
+        "transformations": [1]
+    },
+    {
+        "name": "CNN, Unet Segmentation",
+        "description": "A CNN model where images are first segmented using a Unet-based hand segmentation model, then passed through a CNN for final gesture recognition.",
+        "path_to_model": "cnn_medium_100_epochs_ckp.keras",
+        "transformations": [2]
+    }
+]

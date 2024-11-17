@@ -1,12 +1,15 @@
 from pydantic import BaseModel
 from enum import Enum
+from typing import Optional
 
 '''
  DTOs
 '''
+# Request DTOs
 
+# Response DTOs
 class PredictionResponseDto(BaseModel):
-    prediction : 'GestureType'
+    prediction : Optional['GestureType'] = None
 
 '''
  Enums
