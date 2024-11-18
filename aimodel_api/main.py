@@ -26,8 +26,7 @@ def startup():
     create_tables()
     
     with get_db() as db:
-        populate_database_if_empty(db)
-        
+        populate_database_if_empty(db)   
     with get_db() as db:
         load_models_from_db(db)
         
