@@ -12,7 +12,7 @@ namespace RpsApi.Services;
 public class GesturesService(IFileManagementService fileManagementService, IAiModelApiService aiModelApiService, 
     IGesturesRepository gesturesRepository, IGameService gameService, IUserContextService userContextService) : IGesturesService
 {
-    public async Task<GameUpdateResponse> UploadGesture(IFormFile file, int gameId)
+    public async Task<GameUpdateResponse> UploadGesture(IFormFile file, int modelId, int gameId)
     {
         var game = gameService.GetGameInfo(gameId);
         var user = userContextService.GetCurrentUser();
@@ -21,15 +21,20 @@ public class GesturesService(IFileManagementService fileManagementService, IAiMo
         string fileName = fileManagementService.UploadFile(file);
         string filePath = Path.Combine(fileManagementService.GetUploadDirectoryPath(), fileName);
         
-        GestureType gestureType;
+        GestureType? gestureType;
         try
         {
-            gestureType = await aiModelApiService.AnalyzeGesture(filePath);
+            gestureType = await aiModelApiService.AnalyzeGesture(filePath, modelId);
         }
         catch (Exception e)
         {
             fileManagementService.DeleteFile(fileName);
             throw;
+        }
+        if(gestureType is null)
+        {
+            fileManagementService.DeleteFile(fileName);
+            throw new UnprocessableEntityException("The model was unable to analyze the gesture, please try again");
         }
         
         var newGesture = new Gesture
@@ -105,6 +110,16 @@ public class GesturesService(IFileManagementService fileManagementService, IAiMo
             throw exc;
         }
         return fileStream;
+    }
+    
+    public async Task<List<AiModelDto>> GetAiModels()
+    {
+        return await aiModelApiService.GetAiModels();
+    }
+    
+    public async Task<bool> GiveFeedback(int modelId, bool wrongPrediction)
+    {
+        return await aiModelApiService.GiveFeedback(modelId, wrongPrediction);
     }
 
     public bool DeleteAllUserGestures(User user)

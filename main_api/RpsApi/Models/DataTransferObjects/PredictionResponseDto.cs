@@ -4,5 +4,5 @@ namespace RpsApi.Models.DataTransferObjects;
 
 public class PredictionResponseDto
 {
-    public GestureType Prediction { get; set; }
+    public GestureType? Prediction { get; set; }
 }

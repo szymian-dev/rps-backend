@@ -46,6 +46,10 @@ class ModelManager:
 
     # Apply transformations to image from list of transformation ids
     def _apply_transforms(self, image: Image.Image, transforms: list[int]):
+        if image.mode == "RGBA":
+            image = image.convert("RGB")
+            print("Converted image from RGBA to RGB")
+        
         for transform_id in transforms:
             try:
                 transformation_type = TransformationType(transform_id)
@@ -62,7 +66,6 @@ class ModelManager:
 
     def predict(self, model_id: int, image: Image.Image) -> tf.Tensor:
         model_data = self.loaded_models.get(model_id)
-        print(self.loaded_models)
         if not model_data:
             raise Exception(f"Model {model_id} not loaded.")
         

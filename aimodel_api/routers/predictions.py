@@ -16,7 +16,6 @@ tag = "Predictions"
 
 @router.post("", tags=[tag], summary="Predict the gesture in the image", response_model=PredictionResponseDto)
 async def predict(model_id: int, file: UploadFile = File(...), res = Depends(validate_token)) -> PredictionResponseDto:
-    print(f"Received file: {file.filename} with content type: {file.content_type}")
     image = _read_image(file)
 
     model_manager = ModelManager()

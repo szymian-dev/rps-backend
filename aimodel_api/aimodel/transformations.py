@@ -26,7 +26,10 @@ class RotateImageIfVertical(Transformation):
             image = image.rotate(90, expand=True)
             
         if self.verbose:
-            image.save("tr_rotated_image.jpg")
+            try:
+                image.save("tr_rotated_image.jpg")
+            except Exception as e:
+                print("Could not save rotated image:", e)
         return image
 
 # Converts the image to grayscale using the L mode. image must be a PIL Image object
@@ -37,10 +40,12 @@ class GrayscaleImage(Transformation):
     def apply(self, image):
         if not isinstance(image, Image.Image):
             raise ValueError("GrayscaleTransform: Image must be a PIL Image.")
-        
         image = image.convert('L')
         if self.verbose:
-            image.save("tr_grayscale_image.jpg")
+            try:
+                image.save("tr_grayscale_image.jpg")
+            except Exception as e:
+                print("Could not save grayscale image:", e)
         return image
 
 # Resizes the image to the target size using the Lanczos resampling method. image must be a PIL Image object
@@ -58,8 +63,11 @@ class ResizeImage(Transformation):
         
         image = image.resize(self.target_size, Image.Resampling.LANCZOS)
         if self.verbose:
-            image.save("tr_resized_image.jpg")
-        
+            try:
+                image.save("tr_resized_image.jpg")
+            except Exception as e:
+                print("Could not save resized image:", e)
+    
         return image
     
 # Normalizes the image array by dividing it by 255.0 to scale the pixel values to the range [0, 1], adds batch dimension
@@ -136,7 +144,10 @@ class HandDetection(Transformation):
             cv2.fillPoly(mask, [np.array(points, dtype=np.int32)], 255)
         
         if self.verbose:
-            cv2.imwrite("tr_hand_mask.jpg", mask)
+            try:
+                cv2.imwrite("tr_hand_mask.jpg", mask)
+            except Exception as e:
+                print("Could not save hand mask:", e)
         return mask
 
 # Placeholder class for U-Net segmentation. Do not use.

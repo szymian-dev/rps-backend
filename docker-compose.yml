@@ -28,10 +28,11 @@ services:
     env_file:
       - ./aimodel_api/.env 
     environment:
-      - AI_MODEL_PATH=/app/models/cnn_reguliarized.h5  
+      - AI_MODELS_FOLDER = "./AiModels" 
       - DEBUG=True
     volumes:
-      - ../aimodel/models:/app/models
+      - ./AiModels:/app/AiModels
+
 
   postgres_db:
     image: postgres:17
