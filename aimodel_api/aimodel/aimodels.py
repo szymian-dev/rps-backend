@@ -2,12 +2,17 @@ import os
 import tensorflow as tf
 from sqlalchemy.orm import Session
 from typing import Dict
+from PIL import Image
 
 from ..database.models import Model
 from ..config import settings
+from .transformations import Transformations, TransformationType
+from ..config import settings
+
+import numpy as np
 
 class LoadedModel:
-    def __init__(self, model: tf.keras.models.Model, transforms: List[int]):
+    def __init__(self, model: tf.keras.models.Model, transforms: list[int]):
         self.model = model
         self.transforms = transforms
 
@@ -30,19 +35,23 @@ class ModelManager:
         return tf.keras.models.load_model(path)
 
     # Load models from database
-    @classmethod
-    def load_models_from_db(cls, db: Session):
+    def load_models_from_db(self, db: Session):
         models = db.query(Model).all()
-        cls.loaded_models = {}
+        self.loaded_models = {}
         for model in models:
-            keras_model = cls._load_model(model.path_to_model)
-            transforms = model.transforms
-            cls.loaded_models[model.id] = LoadedModel(keras_model, transforms)
-        print(f"{len(cls.loaded_models)} models loaded into memory.")
+            keras_model = self._load_model(model.path_to_model)
+            transforms = model.transformations
+            self.loaded_models[model.id] = LoadedModel(keras_model, transforms)
+        print(f"{len(self.loaded_models)} models loaded into memory.")
 
-    def _apply_transforms(self, image: Image.Image, transforms: list[TransformationType]):
+    # Apply transformations to image from list of transformation ids
+    def _apply_transforms(self, image: Image.Image, transforms: list[int]):
         for transform_id in transforms:
-            transform = Transformations.get_transform_by_id(transform_id)
+            try:
+                transformation_type = TransformationType(transform_id)
+            except ValueError:
+                raise ValueError(f"Invalid transformation id {transform_id}")
+            transform = Transformations.get_transform_by_id(transformation_type)
             if not transform:
                 raise ValueError(f"Transformation {transform_id} not found.")
             image = transform.apply(image)
@@ -51,18 +60,30 @@ class ModelManager:
         return image
 
 
-
     def predict(self, model_id: int, image: Image.Image) -> tf.Tensor:
         model_data = self.loaded_models.get(model_id)
+        print(self.loaded_models)
         if not model_data:
             raise Exception(f"Model {model_id} not loaded.")
         
         image = self._apply_transforms(image, model_data.transforms)
         if image is None:
             return None
-
-        if isinstance(image, np.ndarray):
-            if len(image.shape) == 3:  
-                image = np.expand_dims(image, axis=0)
         
-        return model_data.model.predict(image)
+        try:
+            prediction = model_data.model.predict(image)
+            
+            if settings.debug:
+                try:
+                    image_array = image.squeeze() 
+                    if image_array.dtype != np.uint8:
+                        image_array = (image_array * 255).astype(np.uint8)  
+                    
+                    i = Image.fromarray(image_array)  
+                    i.save("tr_test.jpg") 
+                except Exception as e:
+                    print(f"Error saving transformed image: {str(e)}. Skipping, don't worry.")
+        except Exception as e:
+            raise Exception(f"Error predicting with model {model_id}: {str(e)}")
+        return prediction
+        

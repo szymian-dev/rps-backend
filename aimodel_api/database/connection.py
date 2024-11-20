@@ -1,23 +1,27 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from fastapi import Depends
 import os
-from contextlib import contextmanager
+from typing import Annotated
+
+from ..config import settings
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./aimodels.db"
 
-engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True)
+engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=settings.debug)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-@contextmanager
-def get_db():
-    db = SessionLocal()  
+def get_db() -> Session:
+    db : Session = SessionLocal()  
     try:
         yield db 
     finally:
         db.close() 
+        
+db_dependency = Annotated[Session, Depends(get_db)]
 
 def create_tables():
     from .models import Model, ModelStatistics
@@ -35,5 +39,3 @@ def populate_database_if_empty(dbSession : Session):
     else:
         print("Database is not empty. Skipping population.")
 
-#create_tables()
-#populate_database_if_empty()

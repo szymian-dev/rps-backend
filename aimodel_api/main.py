@@ -6,7 +6,7 @@ import logging
 from .routers import predictions, models
 from .config import settings
 from .database.connection import SessionLocal, create_tables, populate_database_if_empty, get_db
-from .aimodel.aimodels import load_models_from_db, loaded_models
+from .aimodel.aimodels import ModelManager
 
 app = FastAPI(
     title=settings.app_name,
@@ -23,12 +23,14 @@ app.add_middleware(
 
 @app.on_event("startup")
 def startup():
-    create_tables()
-    
-    with get_db() as db:
-        populate_database_if_empty(db)   
-    with get_db() as db:
-        load_models_from_db(db)
+    db: Session = next(get_db())
+    try:
+        create_tables()
+        populate_database_if_empty(db)
+        mm = ModelManager()
+        mm.load_models_from_db(db)
+    finally:
+        db.close() 
         
 
     
