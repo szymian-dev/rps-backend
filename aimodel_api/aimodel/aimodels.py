@@ -3,6 +3,7 @@ import tensorflow as tf
 from sqlalchemy.orm import Session
 from typing import Dict
 from PIL import Image
+from fastapi import HTTPException
 
 from ..database.models import Model
 from ..config import settings
@@ -67,7 +68,7 @@ class ModelManager:
     def predict(self, model_id: int, image: Image.Image) -> tf.Tensor:
         model_data = self.loaded_models.get(model_id)
         if not model_data:
-            raise Exception(f"Model {model_id} not loaded.")
+            raise HTTPException(status_code=404, detail=f"Model {model_id} not found.")
         
         image = self._apply_transforms(image, model_data.transforms)
         if image is None:

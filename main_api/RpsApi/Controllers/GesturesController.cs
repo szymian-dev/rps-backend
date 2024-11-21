@@ -33,6 +33,7 @@ public class GesturesController(IGesturesService gesturesService)
     /// <response code="400"> Gesture file is invalid. Game with that id does not exist. Game is not in the gesture phase. User has already uploaded a gesture for this game. </response>
     /// <response code="401"> Unauthorized. </response>
     /// <response code="403"> User is not a participant in the game. </response>
+    /// <response code="404"> Ai model not found </response>
     /// <response code="422"> The model was unable to analyze the gesture, please try again. </response>
     /// <response code="500"> Internal server error or could not get a response from AI Model API </response>
     [HttpPost("")]

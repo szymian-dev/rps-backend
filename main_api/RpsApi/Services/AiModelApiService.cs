@@ -162,19 +162,19 @@ public class AiModelApiService(HttpClient httpClient, IOptions<AiModelApiSetting
     {
         if (response.StatusCode == HttpStatusCode.Unauthorized)
         {
-            throw new UnauthorizedAccessException($"Unauthorized. {response.ReasonPhrase}");
+            throw new UnauthorizedAccessException($"AiModelApi: {response.StatusCode} {response.ReasonPhrase}");
         }
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
-            throw new NotFoundException($"Not found. {response.ReasonPhrase}");
+            throw new NotFoundException($"AiModelApi: {response.StatusCode} {response.ReasonPhrase}");
         }
         if (response.StatusCode == HttpStatusCode.Forbidden)
         {
-            throw new ForbiddenAccessException($"Forbidden. {response.ReasonPhrase}");
+            throw new ForbiddenAccessException($"AiModelApi: {response.StatusCode} {response.ReasonPhrase}");
         }
         if (response.StatusCode == HttpStatusCode.BadRequest)
         {
-            throw new BadRequestException($"Bad request. {response.ReasonPhrase}");
+            throw new BadRequestException($"AiModelApi: {response.StatusCode} {response.ReasonPhrase}");
         }
         throw new AiModelApiException($"AiModelApi: {response.StatusCode} {response.ReasonPhrase}");
     }
