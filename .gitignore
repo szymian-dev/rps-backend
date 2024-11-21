@@ -2,6 +2,8 @@ AiModels/
 tmp.py
 test.jpg
 tr_*.jpg
+aimodels.db
+Uploads/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
