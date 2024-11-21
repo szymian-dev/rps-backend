@@ -6,8 +6,12 @@ from fastapi import Header, HTTPException, Depends
 
 from ..config import settings
 
+# To skip authentication, uncomment the following lines
+# def validate_token(authorization : str = ''):
+#   return True
+ 
 
-def validate_token(authorization: str = Header(...)):
+def validate_token(authorization: str = Header(...)): 
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=403, detail="Invalid authentication credentials")
     token = authorization.split(" ")[1] 
