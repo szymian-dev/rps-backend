@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     valid_issuer: str = ""
     
     ai_models_folder: str = ""
+    unet_model_name: str = ""
 
     model_config = SettingsConfigDict(env_file=".env")
     

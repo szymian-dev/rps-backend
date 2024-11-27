@@ -1,26 +1,33 @@
 [
     {
-        "name": "Grayscale CNN Model",
-        "description": "A CNN model trained on grayscale gesture images to recognize various hand gestures in a simple black-and-white format.",
-        "path_to_model": "cnn_medium_sf_100_epochs_ckp.keras",
-        "transformations": [1, 2, 3, 7, 6]
+        "name": "CNN, Unet Segmentation",
+        "description": "Gesture recognition with this model is based on 2 different neural network models: a segmentation model and a classification model. The segmentation model is a U-Net model trained on 1200 handlabeled images of hands with gestures, the subset of the main dataset. The model learns to segment the hand from the backround, creating a binary mask of the hand in the image. The output of the segmentation model is then passed through a CNN classifier for gesture recognition. This solution is more robust to different lighting conditions and backgrounds than the classic CNN models. Images are resized to 128x128 pixels.",
+       
+        "path_to_model": "cnn_unet_classifier_100_epochs.keras",
+        "transformations": [1, 5, 7, 9]
     },
     {
         "name": "CNN Mediapipe",
-        "description": "A CNN model that uses Mediapipe to extract key gesture features, which are then used to emulate segmentation in a machine learning pipeline.",
-        "path_to_model": "cnn_medium_sf_100_epochs_ckp.keras",
-        "transformations": [1, 8, 4, 2, 7, 6]
+        "description": "The model is based on the MediaPipe Hand Tracking model, which is a high-fidelity hand and finger tracking solution. The images are firstly analyzed by MediaPipe Hand Tracking model extracting the hand landmarks, then the landmarks are converted to a binary mask simulating a segmentation model. The binary mask is then resized to 64x64 pixels and passed through a CNN classifier for gesture recognition. This solution is more robust to different lighting conditions and backgrounds than the classic cnn models. The dataset used for training consists of around 7000 images belonging to 3 classes.",
+        "path_to_model": "cnn_mediapipe.keras",
+        "transformations": [1, 2, 4, 6, 7, 9]
     },
     {
-        "name": "CNN, Unet Segmentation",
-        "description": "A CNN model where images are first segmented using a Unet-based hand segmentation model, then passed through a CNN for final gesture recognition.",
-        "path_to_model": "cnn_medium_sf_100_epochs_ckp.keras",
-        "transformations": [1, 2, 5, 7, 6]
+        "name": "Resnet 50",
+        "description": "A Resnet 50 model trained on RGB gesture images. Images are resized to 224x224 pixels and passed through a state-of-the-art Resnet 50 model for gesture recognition. The model has 2 sections: a feature extractor and a classifier. The feature extractor is a pre-trained Resnet 50 model, trained on ImageNet dataset, and the classifier is a custom neural network classifier. The dataset used for training consists of around 7000 images belonging to 3 classes.",
+        "path_to_model": "resnet_50.keras",
+        "transformations": [1, 2, 10, 9]
     },
     {
         "name": "RGB CNN Model",
-        "description": "A CNN model trained on RGB gesture images to recognize various hand gestures in full color.",
-        "path_to_model": "cnn_reguliarized.h5",
-        "transformations": [1, 2, 6]
+        "description": "A CNN model trained on RGB gesture images. Images are resized to 128x128 pixels and passed through a CNN for gesture recognition. The dataset used for training consists of around 7000 images belonging to 3 classes.",
+        "path_to_model": "rgb_128_larger_no_early_stopping.keras",
+        "transformations": [1, 8, 6, 9]
+    },
+    {
+        "name": "Grayscale CNN Model",
+        "description": "A CNN model trained on grayscale gesture images. Images are resized to 224x224 pixels and passed through a CNN for gesture recognition. The dataset used for training consists of around 7000 images belonging to 3 classes. The images are preprocessed by converting them to grayscale.",
+        "path_to_model": "cnn_medium_sf_100_epochs_ckp.keras",
+        "transformations": [1, 2, 3, 6, 7, 9]
     }
 ]

@@ -2,6 +2,7 @@ AiModels/
 tmp.py
 test.jpg
 tr_*.jpg
+tr_*.png
 aimodels.db
 Uploads/
 
