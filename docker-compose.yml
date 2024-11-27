@@ -30,6 +30,7 @@ services:
     environment:
       - AI_MODELS_FOLDER = "/app/AiModels" 
       - DEBUG=True
+      - SKIP_AUTH=True
     volumes:
       - ./aimodel_api/AiModels:/app/AiModels
 

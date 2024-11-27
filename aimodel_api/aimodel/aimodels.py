@@ -118,7 +118,7 @@ class ModelManager:
         if settings.debug:
             print("Predictions:")
             for model_id, prediction in predictions.items():
-                print(f" Model {model_id}\t -\t{str(prediction)}")
+                print(f" Model {model_id}\t-\t{str(prediction)}")
             print(f"Elected: {str(elected)}")
             
         return elected

@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     
     ai_models_folder: str = ""
     unet_model_name: str = ""
+    
+    skip_auth: bool = False
 
     model_config = SettingsConfigDict(env_file=".env")
     
