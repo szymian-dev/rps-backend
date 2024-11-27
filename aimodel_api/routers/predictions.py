@@ -19,6 +19,9 @@ async def predict(model_id: int, file: UploadFile = File(...), res = Depends(val
     image = _read_image(file)
 
     model_manager = ModelManager()
+    if model_id == -1:
+        return _predict_with_all(model_manager, image)
+    
     prediction = model_manager.predict(model_id, image)
     if prediction is None:
         return PredictionResponseDto(prediction=None)
@@ -33,3 +36,7 @@ def _read_image(file: UploadFile) -> Image.Image:
     except Exception as e:
         raise HTTPException(status_code=400, detail="Invalid image file")
     return image
+
+def _predict_with_all(model_manager: ModelManager, image: Image.Image) -> PredictionResponseDto:
+    predicted_class = model_manager.predict_all(image)
+    return PredictionResponseDto(prediction=predicted_class)

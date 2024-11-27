@@ -6,9 +6,9 @@ from PIL import Image
 from fastapi import HTTPException
 
 from ..database.models import Model
-from ..config import settings
 from .transformations import Transformations, TransformationType
 from ..config import settings
+from ..models import GestureType
 
 import numpy as np
 
@@ -90,4 +90,37 @@ class ModelManager:
         except Exception as e:
             raise Exception(f"Error predicting with model {model_id}: {str(e)}")
         return prediction
+    
+    def _vote_predictions(self, predictions: Dict[int, GestureType]) -> GestureType:
+        votes = {}
+        for model_id, prediction in predictions.items():
+            if prediction not in votes:
+                votes[prediction] = 1
+            else:
+                votes[prediction] += 1
+        return max(votes, key=votes.get)
+    
+    def predict_all(self, image: Image.Image):
+        predictions = {}
+        if not self.loaded_models:
+            raise Exception("No models loaded.")
+        
+        for model_id, model_data in self.loaded_models.items():
+            prediction = self.predict(model_id, image)
+            if prediction is not None:
+                predictions[model_id] = GestureType(np.argmax(prediction))
+                
+        if not predictions:
+            return None
+
+        elected = self._vote_predictions(predictions)
+        
+        if settings.debug:
+            print("Predictions:")
+            for model_id, prediction in predictions.items():
+                print(f" Model {model_id}\t -\t{str(prediction)}")
+            print(f"Elected: {str(elected)}")
+            
+        return elected
+        
         
