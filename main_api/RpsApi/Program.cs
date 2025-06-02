@@ -42,6 +42,7 @@ builder.Services.Configure<FileSettings>(builder.Configuration.GetSection("FileS
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 builder.Services.Configure<AiModelApiSettings>(builder.Configuration.GetSection("AiModelApiSettings"));
 builder.Services.Configure<JwtAiModelApiSettings>(builder.Configuration.GetSection("JwtAiModelApiSettings"));
+builder.Services.Configure<CookieSettings>(builder.Configuration.GetSection("CookieSettings"));
 
 // Add HttpClients
 builder.Services.AddHttpClient<IAiModelApiService, AiModelApiService>(client =>
@@ -124,19 +125,22 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: allowedOriginsPolicy,
         policy =>
         {
-            policy.AllowAnyOrigin() // TODO-maybe: Change to AllowSpecificOrigins
+            policy
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .SetIsOriginAllowed(_ => true)
+                .AllowCredentials();
         });
 });
 
 var app = builder.Build();
 
 app.UseMiddleware<ExceptionHandler>();
-app.UseCors();
+app.UseCors(allowedOriginsPolicy);
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+bool enableSwagger = builder.Configuration.GetValue<bool>("EnableSwagger");
+if (enableSwagger)
 {
     app.UseSwagger();
     app.UseSwaggerUI(o =>

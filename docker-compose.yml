@@ -1,0 +1,66 @@
+services:
+  main_api:
+    build:
+      context: ./main_api/RpsApi/
+      dockerfile: Dockerfile
+    ports:
+      - "9040:8080" 
+    container_name: main_api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORT=8080
+      - ConnectionStrings__RpsDatabaseConnection=Host=postgres_db;Port=5432;Database=RPS;Username=RPSuser;Password=rps1234;
+      - AiModelApiSettings__Url=http://ai_model_api:8000/api/v1/
+      - FileSettings__UploadPath=/app/images  
+      - EnableSwagger=true
+    depends_on:
+      - postgres_db
+    volumes:
+      - ./main_api/Uploads:/app/images  
+
+  ai_model_api:
+    build:
+      context: ./aimodel_api/ 
+      dockerfile: Dockerfile
+    ports:
+      - "9030:8000" 
+    container_name: ai_model_api
+    env_file:
+      - ./aimodel_api/.env 
+    environment:
+      - AI_MODELS_FOLDER = "/app/AiModels" 
+      - DEBUG=True
+      - SKIP_AUTH=True
+    volumes:
+      - ./aimodel_api/AiModels:/app/AiModels
+
+
+  postgres_db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: RPSuser
+      POSTGRES_PASSWORD: rps1234
+      POSTGRES_DB: RPS
+    ports:
+      - "9020:5432"
+    container_name: postgres_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d  
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@admin.com  
+      - PGADMIN_DEFAULT_PASSWORD=admin         
+    ports:
+      - "9010:80"
+    depends_on:
+      - postgres_db
+    links:
+      - postgres_db
+
+volumes:
+  postgres_data:
+    driver: local

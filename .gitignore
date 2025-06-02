@@ -1,7 +1,17 @@
+AiModels/
+tmp.py
+test.jpg
+tr_*.jpg
+tr_*.png
+aimodels.db
+Uploads/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
 *$py.class
+*.cache
+*.editorconfig
 
 # C extensions
 *.so

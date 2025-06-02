@@ -9,7 +9,7 @@ public interface IJwtService
 {
     JwtTokenDto CreateJwtForUser(User user);
     RefreshTokenDto CreateOrReplaceRefreshToken(User user, Guid deviceId);
-    AuthResponse RefreshTokens(RefreshRequest request);
+    AuthDto RefreshTokens(RefreshRequest request, Guid refreshToken);
     bool RevokeRefreshToken(User user, Guid deviceId);
     bool RevokeAllRefreshTokens(User user);
     JwtTokenDto GetJwtForAiModelApi();

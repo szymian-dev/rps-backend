@@ -48,6 +48,8 @@ public class ExceptionHandler
             NotFoundException _ => new ExceptionResponse(HttpStatusCode.NotFound, exception.Message),
             InvalidFilterStateException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             ForbiddenAccessException _ => new ExceptionResponse(HttpStatusCode.Forbidden, exception.Message),
+            UnprocessableEntityException _ => new ExceptionResponse(HttpStatusCode.UnprocessableEntity, exception.Message),
+            BadRequestException _ => new ExceptionResponse(HttpStatusCode.BadRequest, exception.Message),
             _ => new ExceptionResponse(HttpStatusCode.InternalServerError, exception.Message)
         };
 
