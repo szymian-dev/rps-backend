@@ -1,7 +1,6 @@
 # Rock Paper Scissors - AI, backend
 ### A web application - the "Rock, Paper, Scissors" game - using an artificial intelligence model to recognize gestures in photos - backend layer.
-Celem pracy jest opracowanie backendu dla interaktywnej gry online "Papier, Kamień, Nożyce", z wykorzystaniem sztucznej inteligencji do rozpoznawania gestów przesyłanych przez użytkowników. Praca obejmuje zaprojektowanie i implementację serwera, który będzie zarządzał komunikacją między frontendem, użytkownikami oraz modelem AI. Backend będzie odpowiedzialny za autoryzację użytkowników, przetwarzanie zdjęć gestów przesyłanych przez graczy, przekazywanie ich do modelu AI oraz zwracanie wyników rozgrywki. Ważnym aspektem projektu będzie integracja modelu sztucznej inteligencji, który będzie analizował gesty pozwalając wyłonić zwycięzcę każdej rundy.
-
+The purpose of this project was to design and implement a web application in the form of an interactive "Rock, Paper, Scissors" game, where users' gestures are recognized using artificial intelligence models. The main technologies used in the project include ASP.NET Core, applied to implement the main API, and FastAPI, used to create a microservice responsible for image analysis and integration with AI models. The AI models designed as part of the project are based on convolutional neural networks, employing transfer learning with the ResNet architecture as well as image segmentation solutions based on the MediaPipe tool and the U-Net neural network architecture.
 ## Main API
 ### Requirements
 - .NET 8 (https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
